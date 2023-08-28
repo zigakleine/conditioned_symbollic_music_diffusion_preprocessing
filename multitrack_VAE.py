@@ -45,7 +45,7 @@ def check_gpus():
         for gpu in gpus:
             print("GPU:", gpu)
             print("Name:", gpu.name)
-            print("Memory:", gpu.memory_limit)
+            # print("Memory:", gpu.memory_limit)
             print("Device Type:", gpu.device_type)
             print("")
 
