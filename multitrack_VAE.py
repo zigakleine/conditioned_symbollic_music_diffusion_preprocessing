@@ -1,0 +1,296 @@
+
+import numpy as np
+import os
+import tensorflow.compat.v1 as tf
+import time
+
+# from google.colab import files
+
+# import magenta.music as mm
+# from magenta.music.sequences_lib import concatenate_sequences
+from magenta.models.music_vae import configs
+from magenta.models.music_vae.trained_model import TrainedModel
+
+from note_seq import midi_io, midi_file_to_note_sequence
+from note_seq import sequences_lib
+
+tf.disable_v2_behavior()
+print('Done!')
+
+
+import ctypes
+import numpy as np
+import mido
+from mido import MidiFile, MidiTrack, Message, MetaMessage, bpm2tempo
+
+
+# NESMDB--> ---Define the struct to match the C++ side
+class nesmdb_sequence_array(ctypes.Structure):
+    _fields_ = [("sequence", ctypes.POINTER(ctypes.POINTER(ctypes.POINTER(ctypes.c_int)))),
+                ("dim1", ctypes.c_int),
+                ("dim2", ctypes.c_int),
+                ("dim3", ctypes.c_int)]
+
+class lakh_sequence_array(ctypes.Structure):
+    _fields_ = [("sequences", ctypes.POINTER(ctypes.POINTER(ctypes.POINTER(ctypes.POINTER(ctypes.c_int))))),
+                ("dim1", ctypes.c_int),
+                ("dim2", ctypes.c_int),
+                ("dim3", ctypes.c_int),
+                ("dim4", ctypes.c_int)]
+
+
+class db_processing:
+
+    def __init__(self, shared_library_path, db_type):
+
+        # Load the shared library
+        self.cpp_lib = ctypes.CDLL(shared_library_path)
+
+        if db_type == "nesmdb":
+            self.sequence_array = nesmdb_sequence_array
+        elif db_type == "lakh":
+            self.sequence_array = lakh_sequence_array
+        else:
+            self.sequence_array = None
+
+        # Define the return type of the function
+        self.cpp_lib.extract_note_sequences_from_midi.restype = self.sequence_array
+
+    def song_from_midi_nesmdb(self, file_path):
+
+        midi_file_loc = ctypes.c_char_p(file_path.encode())
+
+        # Call the C++ function
+        sequence_array = self.cpp_lib.extract_note_sequences_from_midi(midi_file_loc)
+
+        # Convert the array to a NumPy array
+        sequences_ = np.zeros((sequence_array.dim1, sequence_array.dim2, sequence_array.dim3), dtype=np.int32)
+
+        for i in range(sequence_array.dim1):
+            for j in range(sequence_array.dim2):
+                for k in range(sequence_array.dim3):
+                    sequences_[i, j, k] = sequence_array.sequence[i][j][k]
+
+        for i in range(len(sequences_)):
+            print("measure-" + str(i))
+            for j in range(len(sequences_[i])):
+                for k in range(len(sequences_[i][j])):
+                    print(str(sequences_[i][j][k]), end=" ")
+                print("")
+            print("\n")
+        print("\n")
+
+        return sequences_
+
+    def midi_from_song(self, song_data):
+
+        dim1, dim2, dim3 = song_data.shape
+
+        event_sequences = []
+        for i in range(dim1):
+            measure = []
+            for j in range(dim2):
+                track = []
+                for k in range(dim3):
+                    current_val = song_data[i, j, k]
+
+                    if current_val > -1:
+                        if 0 <= current_val < 128:
+                            track.append((1, current_val))
+                        elif 128 <= current_val < 256:
+                            track.append((2, current_val - 128))
+                        elif 256 <= current_val < 352:
+                            track.append((3, current_val - 256 + 1))
+                        elif 352 <= current_val < 360:
+                            track.append((4, current_val - 352 + 1))
+                        elif 360 <= current_val < 488:
+                            track.append((0, current_val - 360 + 1))
+                        elif current_val == 489:
+                            track.append((5, 0))
+                measure.append(track)
+            event_sequences.append(measure)
+
+        for i in range(len(event_sequences)):
+            print("measure-" + str(i))
+            for j in range(len(event_sequences[i])):
+                for k in range(len(event_sequences[i][j])):
+                    print(str(event_sequences[i][j][k]), end=" ")
+                print("")
+            print("\n")
+        print("\n")
+
+        mid = MidiFile()
+
+        measure_ticks = 96
+        nes_tracks = 4
+        ticks_per_beat = 480  # Standard MIDI ticks per beat
+
+        time_shift_multiplier = ticks_per_beat / (measure_ticks/4)  # Adjust to match the time-shift event range
+
+        track_metadata = MidiTrack()
+        mid.tracks.append(track_metadata)
+        track_metadata.append(MetaMessage('time_signature', numerator=4, denominator=4, time=0))
+        track_metadata.append(MetaMessage('set_tempo', tempo=bpm2tempo(120), time=0))
+        track_metadata.append(MetaMessage('time_signature', numerator=4, denominator=1, time=int(len(event_sequences)*measure_ticks*time_shift_multiplier)))
+        track_metadata.append(MetaMessage('end_of_track', time=0))
+
+        ins_names = ['p1', 'p2', 'tr', 'no']
+        ticks_from_last_event = [0, 0, 0, 0]
+        for i in range(nes_tracks):
+            track = MidiTrack()
+            mid.tracks.append(track)
+            track.append(MetaMessage('track_name', name=ins_names[i]))
+
+        for s, sequence in enumerate(event_sequences):
+
+            for t, seq_track in enumerate(sequence):
+                ticks_passed = 0
+
+                active_notes = []
+
+                for event_type, event_value in seq_track:
+
+                    if event_type == 1:  # Note-on event
+                        mid.tracks[t+1].append(Message('note_on', note=event_value, velocity=3, time=ticks_from_last_event[t]))
+                        ticks_from_last_event[t] = 0
+                        active_notes.append(event_value)
+
+                    elif event_type == 2:  # Note-off event
+                        mid.tracks[t+1].append(Message('note_off', note=event_value, velocity=3, time=ticks_from_last_event[t]))
+                        ticks_from_last_event[t] = 0
+                        if event_value in active_notes:
+                            active_notes.remove(event_value)
+
+                    elif event_type == 3:  # Time-shift event
+                        time_shift = int(event_value * time_shift_multiplier)
+                        ticks_passed += time_shift
+
+                        if ticks_passed > int(measure_ticks*time_shift_multiplier):
+                            ticks_passed -= time_shift
+                            break
+                        else:
+                            ticks_from_last_event[t] += time_shift
+
+                # print(s, t, "-ticks_passed", ticks_passed/time_shift_multiplier)
+
+                ticks_from_last_event[t] += int(measure_ticks*time_shift_multiplier) - ticks_passed
+
+                for note in active_notes:
+                    mid.tracks[t+1].append(
+                        Message('note_off', note=note, velocity=3, time=ticks_from_last_event[t]))
+                    ticks_from_last_event[t] = 0
+
+
+                # print("")
+
+
+        for i in range(nes_tracks+1):
+            mid.tracks[i].append(MetaMessage('end_of_track', time=0))
+
+            if mid.tracks[i].name == "no":
+                for event in mid.tracks[i]:
+                    if event.type == "note_on" or event.type == "note_off":
+                        event.note = event.note // 8
+
+
+        return mid
+
+
+class multitrack_vae:
+
+    def __init__(self, model_file_path, batch_size):
+        self.config = configs.CONFIG_MAP['hier-multiperf_vel_1bar_med']
+        self.model = TrainedModel(
+            self.config, batch_size=batch_size,
+            checkpoint_dir_or_path=model_file_path)
+        self.model._config.data_converter._max_tensors_per_input = None
+
+
+    def encode_sequence(self, song_data):
+
+        num_measures = len(song_data)
+        num_tracks = 5
+        max_events = 64
+
+        max_events_all = max_events*8
+        num_tokens = 490
+
+        inputs = []
+        lengths = []
+        controls = []
+
+        for i in range(num_measures):
+            one_hot_matrix = np.zeros((max_events_all, num_tokens), dtype=bool)
+            lengths_measure = np.zeros((8, ), dtype=np.int32)
+            controls_measure = np.empty((1, 0), dtype=np.float64)
+
+            for j in range(num_tracks-1):
+                for k in range(max_events):
+                    current_value = song_data[i, j+1, k]
+                    if current_value > -1:
+                        lengths_measure[j] += 1
+                        one_hot_matrix[max_events*j + k, current_value] = 1
+
+            for l in range(4):
+                one_hot_matrix[(l+4)*max_events, 489] = 1
+                lengths_measure[l+4] += 1
+
+            inputs.append(one_hot_matrix)
+            lengths.append(lengths_measure)
+            controls.append(controls_measure)
+
+        start_time = time.time()
+        z, _, _ = self.model.encode_tensors(inputs, lengths, controls)
+        end_time = time.time()
+        print("time in s:", (end_time - start_time), z)
+
+        return z
+
+    def decode_sequence(self, z, total_steps, temperature):
+
+        # dec = self.model.decode(z, total_steps, temperature)
+        song_tensors = self.model.decode_to_tensors(z, total_steps, temperature, None)
+
+        num_measures = len(song_tensors)
+        tracks_num = 4
+        max_events = 64
+
+        song_data = np.zeros((num_measures, tracks_num, max_events), dtype=np.int32)
+        song_data.fill(-1)
+
+        for i in range(num_measures):
+            for j in range(tracks_num):
+                for k in range(max_events):
+                    token = np.argmax(song_tensors[i][(j * 64 + k)])
+                    song_data[i, j, k] = token
+                    if token == 489:
+                        break
+
+        return song_data
+
+
+if __name__ == "__main__":
+
+    current_dir = os.getcwd()
+    model_file_name = "model_fb256.ckpt"
+    batch_size = 32
+    mario_file_path = "/Users/zigakleine/Desktop/scraping_and_cppmidi/nesdbmario/322_SuperMarioBros__00_01RunningAbout.mid"
+    temperature = 0.2
+    total_steps = 512
+    nesmdb_shared_library_path = "/Users/zigakleine/Desktop/scraping_and_cppmidi/ext_nseq_lib.so"
+    db_type = "nesmdb"
+
+    db_proc = db_processing(nesmdb_shared_library_path, db_type)
+    vae = multitrack_vae(os.path.join(current_dir, model_file_name), batch_size)
+
+    song_data = db_proc.song_from_midi_nesmdb(mario_file_path)
+
+    z = vae.encode_sequence(song_data)
+
+    new_song_data = vae.decode_sequence(z, total_steps, temperature)
+
+    midi = db_proc.midi_from_song(new_song_data)
+
+    midi.save("new_song.mid")
+
+

@@ -1,0 +1,7 @@
+
+/.idea
+/.vscode
+/nesmdb_flat
+*.ckpt.*
+/lakh_hec
+/__pycache__
