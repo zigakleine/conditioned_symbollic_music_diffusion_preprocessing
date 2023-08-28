@@ -1,12 +1,13 @@
 import pickle
 import os
-
+import numpy as np
 import json
 import re
 import time
-from multitrack_VAE import db_processing, multitrack_vae
+from multitrack_VAE import db_processing, multitrack_vae, check_gpus
 
 song_min_measures = 32
+current_dir = os.getcwd()
 
 db_metadata_pkl_1_rel_path = "db_metadata/nesmdb/nesmdb_updated2808.pkl"
 db_metadata_pkl_2_rel_path = "db_metadata/nesmdb/nesmdb_updated2808_BACKUP.pkl"
@@ -14,16 +15,17 @@ db_metadata_pkl_2_rel_path = "db_metadata/nesmdb/nesmdb_updated2808_BACKUP.pkl"
 db_metadata_json_1_rel_path = "db_metadata/nesmdb/nesmdb_meta_json2808.json"
 db_metadata_json_2_rel_path = "db_metadata/nesmdb/nesmdb_updated2808_BACKUP.pkl"
 
-me
+metadata_full_path_pkl = os.path.join(current_dir, db_metadata_pkl_1_rel_path)
+metadata_full_path_json = os.path.join(current_dir, db_metadata_json_1_rel_path)
 
 
-def save_metadata(file_path_pkl, file_path_json, metadata):
-    file = open(file_path_pkl, 'wb')
+def save_metadata(metadata):
+    file = open(metadata_full_path_pkl, 'wb')
     pickle.dump(metadata, file)
     file.close()
 
     y = json.dumps(metadata, indent=4)
-    file_json = open(file_path_json, 'w')
+    file_json = open(metadata_full_path_json, 'w')
     file_json.write(y)
     file_json.close()
 
@@ -39,17 +41,12 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
     if not os.path.exists(all_encodings_dir):
         os.mkdir(all_encodings_dir)
 
-    metadata = pickle.load(open(db_metadata_file_name, "rb"))
-
-
-    metadata["069_DigDug"]["songs"][8]["is_looping"] = False
-
+    metadata = pickle.load(open(metadata_full_path_pkl, "rb"))
 
     song_counter = 0
     transposition_sign = "+" if transposition_plus else "-"
 
     for game in metadata.keys():
-        # print(game)
 
         # create a directory for current_songs encoded tensors
         current_game_dir = os.path.join(encoded_vectors_base_url, output_folder, game)
@@ -60,24 +57,22 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
         songs = metadata[game]["songs"]
         for song in songs:
 
+
+
             time_start = time.time()
 
             is_encodable = song["is_encodable"]
+            encoded_song_urls = song["encoded_song_urls"]
+            is_looping = song["is_looping"]
+            song_rel_path = song["url"]
+            song_full_path = os.path.join(current_dir, song_rel_path)
 
             if not is_encodable:
                 continue
 
-
             instruments_str = "-".join(instruments)
-            if "encoded_song_urls" in song.keys():
-                encoded_song_urls = song["encoded_song_urls"]
-            else:
-                encoded_song_urls = []
-                song["encoded_song_urls"] = encoded_song_urls
-
             encoded_song_file_name = str(song["number"] - 1) + "*" + transposition_sign + str(
                 transposition) + "*" + instruments_str + ".pkl"
-
             encoded_song_url = os.path.join(encoded_vectors_base_url, output_folder, game, encoded_song_file_name)
 
             # preveri če željena transpozicija/ kombinacija trackov že obstaja, če ja skipaš,
@@ -91,50 +86,58 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
                     # encoding exists on disk but not in metadata
                     encoded_song_urls.append(encoded_song_url)
                     song["encoded_song_urls"] = encoded_song_urls
-                    save_metadata(db_metadata_file_name, metadata)
+                    save_metadata(metadata)
 
             else:
-
-                # print("\t" + (song["song_name"] if "song_name" in song.keys() else "noname"))
-
-                # if game == "378_WaiWaiWorld2_SOS__ParsleyJou" and song["number"] - 1 == 10:
-                #     print("hehe")
-
-
-                song_url = song["url"]
-                is_looping = song["is_looping"]
-                is_encodable = True
-
-                song_data = db_proc.song_from_midi_nesmdb(song_url)
+                song_data = db_proc.song_from_midi_nesmdb(song_full_path)
                 song_measures = len(song_data)
+
+                # handle transposition !!!!
+
+                song_data_extended = []
 
                 if song_measures < song_min_measures:
                     if is_looping:
-                        measures_to_add = song_min_measures - song_measures
-                        # for i in range(measures_to_add):
-                        #     song_data.append(song_data[i%song_measures])
-                # else:
-                #     if is_looping:
-                #         measures_to_add = ((song_measures//song_min_measures + 1)*song_min_measures) - song_measures
-                #         for i in range(measures_to_add):
-                #             song_data.append(song_data[i % song_measures])
-                #
+                        for i in range(song_min_measures):
+                            song_data_extended.append(song_data[i % song_measures])
+                else:
+                    if is_looping:
+                        new_length_measures = ((song_measures//song_min_measures + 1)*song_min_measures)
+                        for i in range(new_length_measures):
+                            song_data_extended.append(song_data[i % song_measures])
+                    else:
+                        song_data_extended = song_data
 
-                z = vae.encode_sequence(song_data)
+
+                z = vae.encode_sequence(np.array(song_data_extended))
+
+                batch_size = song_min_measures
+                num_batches = len(z) // batch_size
+
+                new_shape = (num_batches, batch_size, z.shape[1])
+                reshaped_z = z[:num_batches * batch_size].reshape(new_shape)
+
+                file = open(encoded_song_url, 'wb')
+                pickle.dump(reshaped_z, file)
+                file.close()
+
+                encoded_song_urls.append(encoded_song_url)
+                song["encoded_song_urls"] = encoded_song_urls
+                save_metadata(metadata)
 
 
             time_end = time.time()
             time_diff = time_end - time_start
             times.append(time_diff)
             print(game, str(song["number"] - 1), "time-" + str(time_diff), "avg-" + str(sum(times) / len(times)) )
-            save_metadata(db_metadata_file_name, metadata)
+
 
     return metadata
 
 
 if __name__ == "__main__":
 
-    current_dir = os.getcwd()
+    check_gpus()
 
     model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
     nesmdb_shared_library_rel_path = "ext_nseq_nesmdb_lib.so"

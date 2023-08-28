@@ -39,6 +39,23 @@ class lakh_sequence_array(ctypes.Structure):
                 ("dim4", ctypes.c_int)]
 
 
+def check_gpus():
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        for gpu in gpus:
+            print("GPU:", gpu)
+            print("Name:", gpu.name)
+            print("Memory:", gpu.memory_limit)
+            print("Device Type:", gpu.device_type)
+            print("")
+
+        # Allowing TensorFlow to use memory dynamically on a GPU
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+    else:
+        print("No GPUs found. TensorFlow will use CPU.")
+
+
 class db_processing:
 
     def __init__(self, shared_library_path, db_type):
@@ -71,14 +88,14 @@ class db_processing:
                 for k in range(sequence_array.dim3):
                     sequences_[i, j, k] = sequence_array.sequence[i][j][k]
 
-        for i in range(len(sequences_)):
-            print("measure-" + str(i))
-            for j in range(len(sequences_[i])):
-                for k in range(len(sequences_[i][j])):
-                    print(str(sequences_[i][j][k]), end=" ")
-                print("")
-            print("\n")
-        print("\n")
+        # for i in range(len(sequences_)):
+        #     print("measure-" + str(i))
+        #     for j in range(len(sequences_[i])):
+        #         for k in range(len(sequences_[i][j])):
+        #             print(str(sequences_[i][j][k]), end=" ")
+        #         print("")
+        #     print("\n")
+        # print("\n")
 
         return sequences_
 
@@ -239,11 +256,10 @@ class multitrack_vae:
             lengths.append(lengths_measure)
             controls.append(controls_measure)
 
-        start_time = time.time()
+        # start_time = time.time()
         z, _, _ = self.model.encode_tensors(inputs, lengths, controls)
-        end_time = time.time()
-        print("time in s:", (end_time - start_time), z)
-
+        # end_time = time.time()
+        # print("time in s:", (end_time - start_time), z)
         return z
 
     def decode_sequence(self, z, total_steps, temperature):
@@ -271,18 +287,22 @@ class multitrack_vae:
 
 if __name__ == "__main__":
 
+    mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid"
+
     current_dir = os.getcwd()
-    model_file_name = "model_fb256.ckpt"
+    model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
+    nesmdb_shared_library_rel_path = "ext_nseq_nesmdb_lib.so"
+    db_type = "nesmdb"
+
     batch_size = 32
-    mario_file_path = "/Users/zigakleine/Desktop/scraping_and_cppmidi/nesdbmario/322_SuperMarioBros__00_01RunningAbout.mid"
     temperature = 0.2
     total_steps = 512
 
-    nesmdb_shared_library_path = "/Users/zigakleine/Desktop/scraping_and_cppmidi/ext_nseq_lib.so"
-    db_type = "nesmdb"
+    model_path = os.path.join(current_dir, model_rel_path)
+    nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
 
     db_proc = db_processing(nesmdb_shared_library_path, db_type)
-    vae = multitrack_vae(os.path.join(current_dir, model_file_name), batch_size)
+    vae = multitrack_vae(model_path, batch_size)
 
     song_data = db_proc.song_from_midi_nesmdb(mario_file_path)
 

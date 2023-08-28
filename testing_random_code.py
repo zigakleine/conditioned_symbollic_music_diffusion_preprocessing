@@ -22,20 +22,34 @@ import numpy as np
 # print(c.shape)
 
 
-import numpy as np
+# import numpy as np
+#
+# # Create your original numpy array of shape (68, 42)
+# original_array = np.random.rand(129, 42)
+#
+# # Calculate the number of batches
+# batch_size = 32
+# num_batches = original_array.shape[0] // batch_size
+#
+# # Calculate the new shape of the reshaped array
+# new_shape = (num_batches, batch_size, original_array.shape[1])
+#
+# # Reshape the original array into the new shape
+# reshaped_array = original_array[:num_batches * batch_size].reshape(new_shape)
+#
+# print(reshaped_array.shape)  # Should print (2, 32, 42)
+#
 
-# Create your original numpy array of shape (68, 42)
-original_array = np.random.rand(129, 42)
+import pickle
+import json
 
-# Calculate the number of batches
-batch_size = 32
-num_batches = original_array.shape[0] // batch_size
+metadata = pickle.load(open("./db_metadata/nesmdb/nesmdb_updated2808_BACKUP.pkl", "rb"))
 
-# Calculate the new shape of the reshaped array
-new_shape = (num_batches, batch_size, original_array.shape[1])
+file = open('./db_metadata/nesmdb/nesmdb_updated2808.pkl', 'wb')
+pickle.dump(metadata, file)
+file.close()
 
-# Reshape the original array into the new shape
-reshaped_array = original_array[:num_batches * batch_size].reshape(new_shape)
-
-print(reshaped_array.shape)  # Should print (2, 32, 42)
-
+y = json.dumps(metadata, indent=4)
+file_json = open('db_metadata/nesmdb/nesmdb_meta_json2808.json', 'w')
+file_json.write(y)
+file_json.close()
