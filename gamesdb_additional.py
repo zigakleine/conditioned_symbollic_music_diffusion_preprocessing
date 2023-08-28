@@ -34,86 +34,75 @@ def extract_content_inside_parentheses(input_string):
     matches = re.findall(pattern, input_string)
 
     return matches
+#
+# game_systems = set()
+# genres = dict()
+# metadata = pickle.load(open("./db_metadata/nesmdb/nesmdb_updated2808.pkl", "rb"))
+# no_genre_count = 0
+# all_count = 0
+#
+# if "211_M82GameSelectableWorkingProductDisplay" in metadata:
+#     del metadata["211_M82GameSelectableWorkingProductDisplay"]
+#
+# for game in metadata.keys():
+#
+#     # print(game)
+#
+#     game_name = os.path.basename(metadata[game]["download_url"])[:-4]
+#
+#     system_name = extract_content_inside_parentheses(game_name)
+#     system_name_words = 0
+#     if not len(system_name) == 0:
+#         #print(system_name)
+#         game_systems.add(system_name[0])
+#         sys_name = system_name[0]
+#         system_name_words = len(system_name[0].split("_"))
+#     else:
+#         system_name_words = 0
+#         sys_name = ""
+#
+#     game_name_for_search = metadata[game]["game_name_split"].split("-")[:(-1*system_name_words)]
+#     # print("---", " ".join(game_name_for_search))
+#     #
+#     # print("genre: ", metadata[game]["genre"])
+#     # print("sysname: ", system_name)
+#
+#     if metadata[game]["genre"] == "Role-Playing":
+#         metadata[game]["genre"] = "Role-playing"
+#
+#     #print('Enter genre for:', " ".join(game_name_for_search), metadata[game]["genre"])
+#     # x = input()
+#     # x = x.strip()
+#     # if not(x == ""):
+#     #    metadata[game]["genre"] = x
+#
+#     if metadata[game]["genre"] in genres:
+#         genres[metadata[game]["genre"]] +=1
+#     else:
+#         genres[metadata[game]["genre"]] = 1
+#
+#     all_count += 1
+#     print("\n")
+#
 
-game_systems = set()
-genres = dict()
-metadata = pickle.load(open("nesmdb_updated317++.pkl", "rb"))
-no_genre_count = 0
-all_count = 0
+# metadata = pickle.load(open("./db_metadata/nesmdb/nesmdb_updated2808.pkl", "rb"))
+# file = open('./db_metadata/nesmdb/nesmdb_updated2808.pkl', 'wb')
 
-if "211_M82GameSelectableWorkingProductDisplay" in metadata:
-    del metadata["211_M82GameSelectableWorkingProductDisplay"]
-
-for game in metadata.keys():
-
-    # print(game)
-
-    game_name = os.path.basename(metadata[game]["download_url"])[:-4]
-
-    system_name = extract_content_inside_parentheses(game_name)
-    system_name_words = 0
-    if not len(system_name) == 0:
-        #print(system_name)
-        game_systems.add(system_name[0])
-        sys_name = system_name[0]
-        system_name_words = len(system_name[0].split("_"))
-    else:
-        system_name_words = 0
-        sys_name = ""
-
-    game_name_for_search = metadata[game]["game_name_split"].split("-")[:(-1*system_name_words)]
-    # print("---", " ".join(game_name_for_search))
-    #
-    # print("genre: ", metadata[game]["genre"])
-    # print("sysname: ", system_name)
-
-    # if metadata[game]["genre"] == "-":
-
-    print('Enter genre for:', " ".join(game_name_for_search), metadata[game]["genre"])
-    x = input()
-    x = x.strip()
-    if not(x == ""):
-        metadata[game]["genre"] = x
-    #
-    # if metadata[game]["genre"] in genres:
-    #     genres[metadata[game]["genre"]] +=1
-    # else:
-    #     genres[metadata[game]["genre"]] = 1
-
-    all_count += 1
-    print("\n")
-
-    file = open('db_metadata/nesmdb/nesmdb_updated317.pkl', 'wb')
-
-    # dump information to that file
-    pickle.dump(metadata, file)
-
-    # close the file
-    file.close()
-
-    y = json.dumps(metadata, indent=4)
-    file_json = open('db_metadata/nesmdb/nesmdb__meta_json317.json', 'w')
-    file_json.write(y)
-    file_json.close()
-
-
-    file = open('db_metadata/nesmdb/nesmdb_updated317_BACKUP.pkl', 'wb')
-
-    # dump information to that file
-    pickle.dump(metadata, file)
-
-    # close the file
-    file.close()
-
-    y = json.dumps(metadata, indent=4)
-    # print(y)
-
-    file_json = open('db_metadata/nesmdb/nesmdb__meta_json317_BACKUP.json', 'w')
-    file_json.write(y)
-    file_json.close()
-
-print(no_genre_count, "/", all_count)
-print(game_systems)
-print(genres)
-print(len(genres))
+# # dump information to that file
+# pickle.dump(metadata, file)
+#
+# # close the file
+# file.close()
+#
+# y = json.dumps(metadata, indent=4)
+# # print(y)
+#
+# file_json = open('db_metadata/nesmdb/nesmdb_meta_json2808.json', 'w')
+# file_json.write(y)
+# file_json.close()
+#
+# print(no_genre_count, "/", all_count)
+# print(game_systems)
+# print(genres)
+# print(len(genres))
 

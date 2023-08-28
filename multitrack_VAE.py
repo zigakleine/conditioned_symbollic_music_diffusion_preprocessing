@@ -277,6 +277,7 @@ if __name__ == "__main__":
     mario_file_path = "/Users/zigakleine/Desktop/scraping_and_cppmidi/nesdbmario/322_SuperMarioBros__00_01RunningAbout.mid"
     temperature = 0.2
     total_steps = 512
+
     nesmdb_shared_library_path = "/Users/zigakleine/Desktop/scraping_and_cppmidi/ext_nseq_lib.so"
     db_type = "nesmdb"
 

@@ -8,23 +8,27 @@ from multitrack_VAE import db_processing, multitrack_vae
 
 song_min_measures = 32
 
+db_metadata_pkl_1_rel_path = "db_metadata/nesmdb/nesmdb_updated2808.pkl"
+db_metadata_pkl_2_rel_path = "db_metadata/nesmdb/nesmdb_updated2808_BACKUP.pkl"
 
-def save_metadata(db_metadata_file_name, metadata):
-    file = open(db_metadata_file_name, 'wb')
+db_metadata_json_1_rel_path = "db_metadata/nesmdb/nesmdb_meta_json2808.json"
+db_metadata_json_2_rel_path = "db_metadata/nesmdb/nesmdb_updated2808_BACKUP.pkl"
 
-    # dump information to that file
+me
+
+
+def save_metadata(file_path_pkl, file_path_json, metadata):
+    file = open(file_path_pkl, 'wb')
     pickle.dump(metadata, file)
-
-    # close the file
     file.close()
 
     y = json.dumps(metadata, indent=4)
-
-    file_json = open('nesmdb__meta_json.json', 'w')
+    file_json = open(file_path_json, 'w')
     file_json.write(y)
     file_json.close()
 
-def nesmdb_encode(db_metadata_file_name, transposition, transposition_plus, instruments, vae, db_proc):
+
+def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, ):
 
     times = []
     output_folder = "nesmdb_encoded"
@@ -57,6 +61,11 @@ def nesmdb_encode(db_metadata_file_name, transposition, transposition_plus, inst
         for song in songs:
 
             time_start = time.time()
+
+            is_encodable = song["is_encodable"]
+
+            if not is_encodable:
+                continue
 
 
             instruments_str = "-".join(instruments)
@@ -104,17 +113,14 @@ def nesmdb_encode(db_metadata_file_name, transposition, transposition_plus, inst
                         measures_to_add = song_min_measures - song_measures
                         # for i in range(measures_to_add):
                         #     song_data.append(song_data[i%song_measures])
-                    else:
-                        is_encodable = False
                 # else:
                 #     if is_looping:
                 #         measures_to_add = ((song_measures//song_min_measures + 1)*song_min_measures) - song_measures
                 #         for i in range(measures_to_add):
                 #             song_data.append(song_data[i % song_measures])
                 #
-                # if is_encodable:
-                #     # z = vae.encode_sequence(song_data)
-                song["is_encodable"] = is_encodable
+
+                z = vae.encode_sequence(song_data)
 
 
             time_end = time.time()
@@ -125,29 +131,27 @@ def nesmdb_encode(db_metadata_file_name, transposition, transposition_plus, inst
 
     return metadata
 
+
 if __name__ == "__main__":
 
-
-
     current_dir = os.getcwd()
-    model_file_name = "model_fb256.ckpt"
-    nesmdb_shared_library_name = "ext_nseq_lib.so"
+
+    model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
+    nesmdb_shared_library_rel_path = "ext_nseq_nesmdb_lib.so"
+
     batch_size = 32
 
-    model_path = os.path.join(current_dir, model_file_name)
-
-    nesmdb_shared_library_path = "/Users/zigakleine/Desktop/scraping_and_cppmidi/ext_nseq_lib.so"
+    model_path = os.path.join(current_dir, model_rel_path)
+    nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
     db_type = "nesmdb"
 
     db_proc = db_processing(nesmdb_shared_library_path, db_type)
-    vae = multitrack_vae(os.path.join(current_dir, model_file_name), batch_size)
-
-    db_metadata_file_name = "nesmdb_updated.pkl"
+    vae = multitrack_vae(os.path.join(current_dir, model_path), batch_size)
 
     transposition = 0
-    trasposition_plus = True
+    transposition_plus = True
     desired_instruments = ["p1", "p2", "tr", "no"]
 
-    metadata = nesmdb_encode(db_metadata_file_name, transposition, trasposition_plus, desired_instruments, vae, db_proc)
+    metadata = nesmdb_encode(transposition, transposition_plus, desired_instruments, vae, db_proc)
 
-    save_metadata(current_dir, db_metadata_file_name, metadata)
+    save_metadata(metadata)
