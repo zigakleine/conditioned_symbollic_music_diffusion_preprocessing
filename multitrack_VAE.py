@@ -319,7 +319,7 @@ class multitrack_vae:
 
 if __name__ == "__main__":
 
-    mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid"
+    mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/5/5eefc5044ddb69612ee58d7a5da12ca0.mid"
 
     current_dir = os.getcwd()
     model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
