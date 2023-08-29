@@ -36,6 +36,15 @@ struct note{
   libremidi::track_event* end;
 };
 
+struct sequence_array {
+  int**** sequences;
+  int dim1;
+  int dim2;
+  int dim3;
+  int dim4;
+  int successful;
+};
+
 void test_library(){
   std::cout << "hehe" << std::endl;
 }
@@ -388,6 +397,10 @@ void extract_sequence(std::vector<std::vector<note>>& all_notes,std::vector<std:
       int events_to_erase = events_num - 64;
       int notes_to_erase = events_to_erase / 2 + (events_to_erase % 2);
 
+      if(notes_to_erase > block_notes[i].size()){
+        notes_to_erase = block_notes[i].size();
+      }
+
       for (int k = 0; k < notes_to_erase; k++){
         block_notes[i].pop_back();
       }
@@ -440,8 +453,14 @@ void extract_sequence(std::vector<std::vector<note>>& all_notes,std::vector<std:
               sequence[i].push_back(music_sequence_event{3, ticks_elapsed});
               ticks_elapsed = 0;
             }
+
+            int note_off_value = (int)block_note->m.bytes[1];
+
+            if (i == block_notes.size() - 1){
+              note_off_value = note_off_value / 8;
+            }
           
-            sequence[i].push_back(music_sequence_event{2, (int)block_note->m.bytes[1]});
+            sequence[i].push_back(music_sequence_event{2, note_off_value});
 
           }
 
@@ -451,7 +470,13 @@ void extract_sequence(std::vector<std::vector<note>>& all_notes,std::vector<std:
               sequence[i].push_back(music_sequence_event{3, ticks_elapsed});
               ticks_elapsed = 0;
             }
-            sequence[i].push_back(music_sequence_event{1, block_note->m.bytes[1]});
+            int note_on_value = (int)block_note->m.bytes[1];
+
+            if (i == block_notes.size() - 1){
+              note_on_value = note_on_value / 8;
+            }
+            
+            sequence[i].push_back(music_sequence_event{1, note_on_value});
           }
 
         }
@@ -509,8 +534,14 @@ void split_midi_2(std::vector<libremidi::track_event>& control_events, std::vect
 
     if(eventType == libremidi::meta_event_type::TEMPO_CHANGE){
 
-      int event_tempo = 60000000/(int)(((uint8_t)event.m.bytes[3] << 16) + ((uint8_t)event.m.bytes[4] << 8) + ((uint8_t)event.m.bytes[5]));
-      std::cout << current_time << "tempo-" << event_tempo << std::endl; 
+      
+      int tempo_ = (int)(((uint8_t)event.m.bytes[3] << 16) + ((uint8_t)event.m.bytes[4] << 8) + ((uint8_t)event.m.bytes[5]));
+
+      if(tempo_ <= 0){
+        tempo_ = 500000;
+      }
+      int event_tempo = 60000000/tempo_;
+      // std::cout << current_time << "tempo-" << event_tempo << std::endl; 
 
       if(event_tempo != current_tempo && (current_time - last_event_time) > 0){
         midi_blocks.push_back(tempo_signature_block{current_tempo, current_time_signature_1, current_time_signature_2, last_event_time, current_time, -1});
@@ -528,7 +559,7 @@ void split_midi_2(std::vector<libremidi::track_event>& control_events, std::vect
 
       int event_time_signature_1 = (int)event.m.bytes[3]; 
       int event_time_signature_2 = pow(2, (int)event.m.bytes[4]);
-      std::cout << current_time << "time_signature-" << event_time_signature_1 << "/" << event_time_signature_2 << std::endl; 
+      // std::cout << current_time << "time_signature-" << event_time_signature_1 << "/" << event_time_signature_2 << std::endl; 
 
 
       if((event_time_signature_1 != current_time_signature_1 || event_time_signature_2 != current_time_signature_2) && (current_time - last_event_time) > 0){
@@ -587,7 +618,7 @@ bool parse_midi(std::vector<uint8_t>& bytes, libremidi::reader& r){
   if (result != libremidi::reader::invalid)
   {
     is_valid = true;
-    std::cout << "ticks per beat: " << r.ticksPerBeat << std::endl;
+    // std::cout << "ticks per beat: " << r.ticksPerBeat << std::endl;
     
   }
 
@@ -633,11 +664,11 @@ void get_all_possible_nes_tracks(std::vector<std::vector<int>>& all_posible_nes_
     }
 
     all_posible_nes_tracks.push_back(nes_track_nums);
-    std::cout << "nes track nums" << std::endl;
-    for(int i = 0; i< nes_track_nums.size(); i++){
-      std::cout << nes_tracks[i] << ": " << nes_track_nums[i]  << " | ";
-    }
-    std::cout << std::endl;
+    // std::cout << "nes track nums" << std::endl;
+    // for(int i = 0; i< nes_track_nums.size(); i++){
+    //   std::cout << nes_tracks[i] << ": " << nes_track_nums[i]  << " | ";
+    // }
+    // std::cout << std::endl;
 
   } 
 
@@ -646,7 +677,7 @@ void get_all_possible_nes_tracks(std::vector<std::vector<int>>& all_posible_nes_
 void filter_and_quantize_midi_blocks(std::vector<tempo_signature_block>& used_midi_blocks, std::vector<tempo_signature_block>& midi_blocks, int ticks_per_sixteenth, int sequence_length_measures, int current_ticks_per_beat, int quantized_ticks_per_beat){
 
   int smallest_timestep = current_ticks_per_beat/quantized_ticks_per_beat;
-  std::cout << "all midi blocks:" << std::endl;
+  // std::cout << "all midi blocks:" << "smallest timestep-" << smallest_timestep << std::endl;
 
   for(auto& midi_block : midi_blocks){
     int block_length = midi_block.tick_end - midi_block.tick_start;
@@ -654,7 +685,7 @@ void filter_and_quantize_midi_blocks(std::vector<tempo_signature_block>& used_mi
     block_length_sixteenths += (16 - block_length_sixteenths % 16);
     int block_measures = block_length_sixteenths/16;
 
-    std::cout << "measures-" << block_measures << "time_signature-" << midi_block.time_signature_1 << "/" << midi_block.time_signature_2 << " tempo-" << midi_block.tempo << std::endl;
+    // std::cout << "ticks-" << midi_block.tick_start << "-" << midi_block.tick_end << "measures-" << block_measures << "time_signature-" << midi_block.time_signature_1 << "/" << midi_block.time_signature_2 << " tempo-" << midi_block.tempo << std::endl;
   
     if(midi_block.time_signature_1 == 4 && midi_block.time_signature_2 == 4){
 
@@ -662,7 +693,7 @@ void filter_and_quantize_midi_blocks(std::vector<tempo_signature_block>& used_mi
 
 
         int num_of_blocks_to_add = block_measures/sequence_length_measures;  
-        std::cout << "block_measures-" << block_measures << "numblocks_to_add-" << num_of_blocks_to_add << std::endl;
+        // std::cout << "block_measures-" << block_measures << "numblocks_to_add-" << num_of_blocks_to_add << std::endl;
 
       
         int this_block_start;
@@ -705,7 +736,7 @@ void filter_and_quantize_midi_blocks(std::vector<tempo_signature_block>& used_mi
 
 }
 
-int**** extract_note_sequences_from_midi_lakh(std::string midi_file_location)
+sequence_array extract_note_sequences_from_midi(char* midi_file_location)
 {
 
 
@@ -716,7 +747,7 @@ int**** extract_note_sequences_from_midi_lakh(std::string midi_file_location)
   if(!file.is_open())
   {
     std::cerr << "Could not open " << midi_file_location << std::endl;
-    return NULL;
+    return sequence_array{NULL, 0, 0, 0, 0, 0};
   }
 
   std::vector<uint8_t> bytes;
@@ -727,7 +758,7 @@ int**** extract_note_sequences_from_midi_lakh(std::string midi_file_location)
   bool is_valid = parse_midi(bytes, r);
 
   if(!is_valid){
-    return NULL;
+    return sequence_array{NULL, 0, 0, 0, 0, 0};
   }
 
   ////// TULE SE ZARES STVARI ZAČNEJO DOGAJAT
@@ -737,64 +768,68 @@ int**** extract_note_sequences_from_midi_lakh(std::string midi_file_location)
   int tracks_num = r.tracks.size();
 
   sort_events(r);  
-  print_out_sequence(r);
+  // print_out_sequence(r);
 
   std::vector<int> program_nums(tracks_num, -1);
   get_program_numbers(r, program_nums);
 
-  std::cout << "num of tracks: " << tracks_num << std::endl;
-  std::cout << "program nums: " << std::endl;
-  for(int i = 0; i < program_nums.size(); i++){
-    std::cout << program_nums[i] << " ";
-  }
-  std::cout << std::endl;
+  // std::cout << "num of tracks: " << tracks_num << std::endl;
+  // std::cout << "program nums: " << std::endl;
+  // for(int i = 0; i < program_nums.size(); i++){
+  //   std::cout << program_nums[i] << " ";
+  // }
+  // std::cout << std::endl;
 
   std::vector<int> program_nums_cpy = program_nums;
   std::vector<std::vector<int>> all_posible_nes_tracks;
   get_all_possible_nes_tracks(all_posible_nes_tracks, program_nums_cpy);
 
-  
+  if(all_posible_nes_tracks.size() == 0){
+    return sequence_array{NULL, 0, 0, 0, 0, 0};
+  }
+
+
   std::vector<libremidi::track_event> control_events;
   get_control_events(r, control_events);
 
   std::vector<tempo_signature_block> midi_blocks;
   split_midi_2(control_events, midi_blocks, last_note_event_tick);
 
-
   int current_ticks_per_beat = r.ticksPerBeat;
   int quantized_ticks_per_beat = 24;
   std::vector<tempo_signature_block> used_midi_blocks;
   int sequence_length_measures = 32;
+
+  int smallest_timestep = current_ticks_per_beat/quantized_ticks_per_beat;  
+  if(smallest_timestep <= 0){
+    return sequence_array{NULL, 0, 0, 0, 0, 0};
+  }
+
   filter_and_quantize_midi_blocks(used_midi_blocks, midi_blocks, ticks_per_sixteenth, sequence_length_measures, current_ticks_per_beat, quantized_ticks_per_beat);
 
-
-
-  std::cout << std::endl;
   
   std::vector<std::vector<note>> all_notes(tracks_num, std::vector<note>());
   extract_notes(r, all_notes);
 
 
-
-  std::cout << "yello0 "<< std::endl;
-
-
   quantize_notes(all_notes, current_ticks_per_beat, quantized_ticks_per_beat);
-
-  std::cout << std::endl;
-  std::cout << "yello 2"<< std::endl;
-
+  
   std::vector<std::vector<std::vector<std::vector<music_sequence_event>>>> all_blocks_sequences;
 
   int block_counter = 0;
   int block_num = 0;
   int nes_tracks_num = 4;
-  std::cout << std::endl << "used midi blocks:" << std::endl;
+  // std::cout << std::endl << "used midi blocks:" << std::endl;
+
+  if(used_midi_blocks.size() == 0) {
+    return sequence_array{NULL, 0, 0, 0, 0, 0};
+  }
+
   for(const auto& used_midi_block : used_midi_blocks){
 
     int block_measures = used_midi_block.length_measures;
     
-    std::cout << "measures: " << block_measures << " TIME_SIGNATURE: " << used_midi_block.time_signature_1 << "/" << used_midi_block.time_signature_2 << " TEMPO: " << used_midi_block.tempo << "nes-configs-num" << all_posible_nes_tracks.size() << std::endl;
+    // std::cout << "measures: " << block_measures << " TIME_SIGNATURE: " << used_midi_block.time_signature_1 << "/" << used_midi_block.time_signature_2 << " TEMPO: " << used_midi_block.tempo << "nes-configs-num" << all_posible_nes_tracks.size() << std::endl;
 
 
 
@@ -804,7 +839,7 @@ int**** extract_note_sequences_from_midi_lakh(std::string midi_file_location)
 
     for(int h = 0; h < all_posible_nes_tracks.size(); h++){
 
-      std::vector< std::vector<std::vector<music_sequence_event>>> current_block_sequences;
+      std::vector<std::vector<std::vector<music_sequence_event>>> current_block_sequences;
 
       std::vector<std::vector<note>> all_notes_reconfig(nes_tracks_num, std::vector<note>());
       std::vector<int> midi_programs(nes_tracks_num, -1);
@@ -815,10 +850,10 @@ int**** extract_note_sequences_from_midi_lakh(std::string midi_file_location)
           midi_programs[j] = program_nums[all_posible_nes_tracks[h][j]];
         }
       }
-      for(int j = 0; j < nes_tracks_num; j++){
-         std::cout << midi_programs[j] << " ";
-      }
-      std::cout << std::endl;
+      // for(int j = 0; j < nes_tracks_num; j++){
+      //    std::cout << midi_programs[j] << " ";
+      // }
+      // std::cout << std::endl;
 
       for(int i = 0; i < block_measures; i++){
         measure_start = used_midi_block.tick_start + i*96;
@@ -826,17 +861,45 @@ int**** extract_note_sequences_from_midi_lakh(std::string midi_file_location)
         std::vector<std::vector<music_sequence_event>> sequence(nes_tracks_num, std::vector<music_sequence_event>());
 
         extract_sequence(all_notes_reconfig, sequence, measure_start, measure_end, midi_programs);
+
         current_block_sequences.push_back(sequence);
       }
-      all_blocks_sequences.push_back(current_block_sequences);
 
+      bool all_sequences_empty = true;
+      for(int i = 0; i<current_block_sequences.size(); i++){
+        // std::cout << "measure-" << i << std::endl;
+        for(int j = 0; j<current_block_sequences[i].size(); j++){
 
+          // for(int k = 0; k < current_block_sequences[i][j].size(); k++){
+          //   std::cout << current_block_sequences[i][j][k].event_type << "-" << current_block_sequences[i][j][k].event_value << " ";
+          // }
+          if(current_block_sequences[i][j][0].event_type != 5){
+            all_sequences_empty = false;
+          }
+          // std::cout << std::endl;
+        }
+        // std::cout << std::endl;
+        // std::cout << std::endl;
+      }
+      // std::cout << "!!!!! AREALLEMPTY-" << all_sequences_empty << std::endl;
+
+      // std::cout << std::endl;
+      // std::cout << std::endl;
+      // std::cout << std::endl;
+
+      if(!all_sequences_empty){
+        all_blocks_sequences.push_back(current_block_sequences);
+      }
     }
 
   }
 
   
-  std::cout << std::endl << std::endl << std::endl;
+  if(all_blocks_sequences.size() == 0) {
+    return sequence_array{NULL, 0, 0, 0, 0, 0};
+  }
+
+  // std::cout << std::endl << std::endl << std::endl;
   int max_events = 64;
   int blocks_num = all_blocks_sequences.size();
   // [blocks_num][sequence_length_measures][nes_tracks_num][max_events]
@@ -844,9 +907,9 @@ int**** extract_note_sequences_from_midi_lakh(std::string midi_file_location)
 
   for(int h = 0; h < blocks_num; h++){
     sequences_[h] = new int**[sequence_length_measures];
-    std::cout << "block-" << h << std::endl; 
+    // std::cout << "block-" << h << std::endl; 
     for(int i = 0; i < sequence_length_measures; i++){
-      std::cout << "block-" << h << "__measure-" << i << std::endl; 
+      // std::cout << "block-" << h << "__measure-" << i << std::endl; 
       sequences_[h][i] = new int*[nes_tracks_num];
       for(int j = 0; j < nes_tracks_num; j++){
         sequences_[h][i][j] = new int[max_events];
@@ -855,7 +918,7 @@ int**** extract_note_sequences_from_midi_lakh(std::string midi_file_location)
           sequences_[h][i][j][k] = -1;
 
           if(k < all_blocks_sequences[h][i][j].size()){
-            std::cout << all_blocks_sequences[h][i][j][k].event_type << "-" << all_blocks_sequences[h][i][j][k].event_value << " ";
+            // std::cout << all_blocks_sequences[h][i][j][k].event_type << "-" << all_blocks_sequences[h][i][j][k].event_value << " ";
           
             if(all_blocks_sequences[h][i][j][k].event_type == 0){
               // start token
@@ -887,33 +950,33 @@ int**** extract_note_sequences_from_midi_lakh(std::string midi_file_location)
           }   
 
         }
-        std::cout << std::endl;
+        // std::cout << std::endl;
       }
-      std::cout << std::endl << std::endl;
+      // std::cout << std::endl << std::endl;
     } 
 
-    std::cout << std::endl << std::endl; 
-    std::cout << std::endl << std::endl;
+    // std::cout << std::endl << std::endl; 
+    // std::cout << std::endl << std::endl;
   }
 
-  std::cout << std::endl << std::endl;
-  std::cout << std::endl << std::endl;
-  for(int h = 0; h < blocks_num; h++){
-    std::cout << "block-" << h << std::endl; 
-    for(int i = 0; i < sequence_length_measures; i++){
-      std::cout << "block-" << h << "__measure-" << i << std::endl; 
-      for(int j = 0; j < nes_tracks_num; j++){
-        for(int k = 0; k < max_events; k++){
-          std::cout << sequences_[h][i][j][k] << " ";
-        }
-        std::cout << std::endl;
-      }
-      std::cout << std::endl << std::endl;
-    }
-    std::cout << std::endl << std::endl;
-  }
+  // std::cout << std::endl << std::endl;
+  // std::cout << std::endl << std::endl;
+  // for(int h = 0; h < blocks_num; h++){
+  //   std::cout << "block-" << h << std::endl; 
+  //   for(int i = 0; i < sequence_length_measures; i++){
+  //     std::cout << "block-" << h << "__measure-" << i << std::endl; 
+  //     for(int j = 0; j < nes_tracks_num; j++){
+  //       for(int k = 0; k < max_events; k++){
+  //         std::cout << sequences_[h][i][j][k] << " ";
+  //       }
+  //       std::cout << std::endl;
+  //     }
+  //     std::cout << std::endl << std::endl;
+  //   }
+  //   std::cout << std::endl << std::endl;
+  // }
 
-  return sequences_;
+  return sequence_array{sequences_, blocks_num, sequence_length_measures, nes_tracks_num, max_events, 1};
 }
 
 int main(int argc, char** argv)
@@ -921,9 +984,11 @@ int main(int argc, char** argv)
 
   
 
-  //std::string midi_file_url = "/Users/zigakleine/Desktop/scraping_and_cppmidi/lakh_hec/01e4d4c4aa4f114aac5931485f8049e2.mid";
-  std::string midi_file_url = "/Users/zigakleine/Desktop/scraping_and_cppmidi/lakh_hec/077eff274aa976d4ec26b893e5ab672d.mid";
-  extract_note_sequences_from_midi_lakh(midi_file_url);  
+
+  // char* midi_file_url = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/0/0936ab6f223888c0009d194fd4520e6d.mid";
+  // char* midi_file_url = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/0/046e8798271fbcd61f394b2bd1a6dd0b.mid";
+  char* midi_file_url = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/0/001a5555e7b2fc9c81d76458a3a08982.mid";
+  extract_note_sequences_from_midi(midi_file_url);  
 
 }
 

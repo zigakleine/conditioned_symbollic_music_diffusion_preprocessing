@@ -1,0 +1,6 @@
+
+----------------------------------------------------------------------------------------
+filepath: /Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/0/001a5555e7b2fc9c81d76458a3a08982.mid
+
+Parsing validated
+

@@ -36,7 +36,8 @@ class lakh_sequence_array(ctypes.Structure):
                 ("dim1", ctypes.c_int),
                 ("dim2", ctypes.c_int),
                 ("dim3", ctypes.c_int),
-                ("dim4", ctypes.c_int)]
+                ("dim4", ctypes.c_int),
+                ("successful", ctypes.c_int)]
 
 
 def check_gpus():
@@ -97,6 +98,38 @@ class db_processing:
         #     print("\n")
         # print("\n")
 
+        return sequences_
+
+    def song_from_midi_lakh(self, file_path):
+
+        midi_file_loc = ctypes.c_char_p(file_path.encode())
+
+        # Call the C++ function
+        sequences_array = self.cpp_lib.extract_note_sequences_from_midi(midi_file_loc)
+
+        if sequences_array.successful == 0:
+            return None
+
+        # Convert the array to a NumPy array
+        sequences_ = np.zeros((sequences_array.dim1, sequences_array.dim2, sequences_array.dim3, sequences_array.dim4), dtype=np.int32)
+
+        for h in range(sequences_array.dim1):
+            for i in range(sequences_array.dim2):
+                for j in range(sequences_array.dim3):
+                    for k in range(sequences_array.dim4):
+                        sequences_[h, i, j, k] = sequences_array.sequences[h][i][j][k]
+
+        # for h in range(sequences_.shape[0]):
+        #     print("block-" + str(h))
+        #     for i in range(sequences_.shape[1]):
+        #         print("measure-" + str(i))
+        #         for j in range(sequences_.shape[2]):
+        #             for k in range(sequences_.shape[3]):
+        #                 print(str(sequences_[h, i, j, k]), end=" ")
+        #             print("")
+        #         print("\n")
+        #     print("\n")
+        #     print("\n")
         return sequences_
 
     def midi_from_song(self, song_data):
@@ -222,11 +255,10 @@ class multitrack_vae:
             checkpoint_dir_or_path=model_file_path)
         self.model._config.data_converter._max_tensors_per_input = None
 
-
     def encode_sequence(self, song_data):
 
         num_measures = len(song_data)
-        num_tracks = 5
+        num_tracks = 4
         max_events = 64
 
         max_events_all = max_events*8
@@ -241,14 +273,14 @@ class multitrack_vae:
             lengths_measure = np.zeros((8, ), dtype=np.int32)
             controls_measure = np.empty((1, 0), dtype=np.float64)
 
-            for j in range(num_tracks-1):
+            for j in range(num_tracks):
                 for k in range(max_events):
-                    current_value = song_data[i, j+1, k]
+                    current_value = song_data[i, j, k]
                     if current_value > -1:
                         lengths_measure[j] += 1
                         one_hot_matrix[max_events*j + k, current_value] = 1
 
-            for l in range(4):
+            for l in range(8-num_tracks):
                 one_hot_matrix[(l+4)*max_events, 489] = 1
                 lengths_measure[l+4] += 1
 
@@ -291,8 +323,8 @@ if __name__ == "__main__":
 
     current_dir = os.getcwd()
     model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
-    nesmdb_shared_library_rel_path = "ext_nseq_nesmdb_lib.so"
-    db_type = "nesmdb"
+    nesmdb_shared_library_rel_path = "ext_nseq_lakh_lib.so"
+    db_type = "lakh"
 
     batch_size = 32
     temperature = 0.2
@@ -302,16 +334,45 @@ if __name__ == "__main__":
     nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
 
     db_proc = db_processing(nesmdb_shared_library_path, db_type)
-    vae = multitrack_vae(model_path, batch_size)
+    song_data = db_proc.song_from_midi_lakh(mario_file_path)
 
-    song_data = db_proc.song_from_midi_nesmdb(mario_file_path)
+    if song_data is not None:
+        vae = multitrack_vae(model_path, batch_size)
 
-    z = vae.encode_sequence(song_data)
+        song_data_reshaped = song_data.reshape(song_data.shape[0]*song_data.shape[1], 4, 64)
+        z = vae.encode_sequence(song_data_reshaped)
 
-    new_song_data = vae.decode_sequence(z, total_steps, temperature)
+        new_song_data = vae.decode_sequence(z, total_steps, temperature)
 
-    midi = db_proc.midi_from_song(new_song_data)
+        midi = db_proc.midi_from_song(new_song_data)
 
-    midi.save("new_song.mid")
+        midi.save("new_song.mid")
 
 
+    # mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid"
+    #
+    # current_dir = os.getcwd()
+    # model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
+    # nesmdb_shared_library_rel_path = "ext_nseq_nesmdb_lib.so"
+    # db_type = "nesmdb"
+    #
+    # batch_size = 32
+    # temperature = 0.2
+    # total_steps = 512
+    #
+    # model_path = os.path.join(current_dir, model_rel_path)
+    # nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
+    #
+    # db_proc = db_processing(nesmdb_shared_library_path, db_type)
+    # song_data = db_proc.song_from_midi_nesmdb(mario_file_path)
+    #
+    # vae = multitrack_vae(model_path, batch_size)
+    #
+    # song_data_reshaped = song_data[:, 1:, :]
+    # z = vae.encode_sequence(song_data_reshaped)
+    #
+    # new_song_data = vae.decode_sequence(z, total_steps, temperature)
+    #
+    # midi = db_proc.midi_from_song(new_song_data)
+    #
+    # midi.save("new_song.mid")
