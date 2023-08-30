@@ -30,7 +30,7 @@ def save_metadata(metadata):
     file_json.close()
 
 
-def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, ):
+def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc ):
 
     times = []
     output_folder = "nesmdb_encoded"
@@ -57,10 +57,6 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
         songs = metadata[game]["songs"]
         for song in songs:
 
-
-
-            time_start = time.time()
-
             is_encodable = song["is_encodable"]
             encoded_song_urls = song["encoded_song_urls"]
             is_looping = song["is_looping"]
@@ -75,6 +71,7 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
                 transposition) + "*" + instruments_str + ".pkl"
             encoded_song_url = os.path.join(encoded_vectors_base_url, output_folder, game, encoded_song_file_name)
 
+            time_start = time.time()
             # preveri če željena transpozicija/ kombinacija trackov že obstaja, če ja skipaš,
             # sicer jo narediš + dodaš url v seznam urljev
             if os.path.isfile(encoded_song_url):
@@ -131,7 +128,6 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
             times.append(time_diff)
             print(game, str(song["number"] - 1), "time-" + str(time_diff), "avg-" + str(sum(times) / len(times)) )
 
-
     return metadata
 
 
@@ -149,7 +145,7 @@ if __name__ == "__main__":
     db_type = "nesmdb"
 
     db_proc = db_processing(nesmdb_shared_library_path, db_type)
-    vae = multitrack_vae(os.path.join(current_dir, model_path), batch_size)
+    vae = multitrack_vae(model_path, batch_size)
 
     transposition = 0
     transposition_plus = True

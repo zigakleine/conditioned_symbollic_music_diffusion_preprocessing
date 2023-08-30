@@ -8,7 +8,7 @@ current_directory = os.getcwd()
 
 lakh_folder = "lmd_full"
 subdirectories = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
-index = 8
+index = 13
 subdirectory = subdirectories[index]
 
 lakh_subdir_path = os.path.join(current_directory, lakh_folder, subdirectory)
