@@ -3,6 +3,5 @@
 /.vscode
 /nesmdb_flat
 *.ckpt.*
-/lakh_hec
 /__pycache__
 /lmd_full
