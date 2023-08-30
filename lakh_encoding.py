@@ -56,15 +56,14 @@ def lakh_encode(vae, db_proc, fb256_mask):
 
     for song in metadata.keys():
 
-        is_encodable = metadata[song]["encodable"]
 
         encoded_song_filename = song + "_enc.pkl"
         encoded_song_rel_path = os.path.join(output_folder, subdirectory, encoded_song_filename)
         encoded_song_abs_path = os.path.join(current_dir, encoded_song_rel_path)
 
-        if not is_encodable:
-            count += 1
-            continue
+        # if not is_encodable:
+        #     count += 1
+        #     continue
 
         time_start = time.time()
         if os.path.isfile(encoded_song_abs_path):
@@ -85,6 +84,7 @@ def lakh_encode(vae, db_proc, fb256_mask):
             if song_data is None:
                 count += 1
                 print("unsuccessful")
+                metadata[song]["encodable"] = False
                 continue
 
             song_data_sequences = song_data.shape[0]
@@ -100,6 +100,8 @@ def lakh_encode(vae, db_proc, fb256_mask):
             file.close()
             succesful_songs +=1
             successful_sequences += song_data_sequences
+
+            metadata[song]["encodable"] = True
             metadata[song]["encoded_song_path"] = encoded_song_rel_path
             save_metadata(metadata)
 
@@ -110,6 +112,11 @@ def lakh_encode(vae, db_proc, fb256_mask):
     print(f"successful songs-{succesful_songs}")
     print(f"successful sequences-{successful_sequences}")
     print(f"all songs-{all_songs}")
+    file = open("./final_" + subdirectory + ".txt", 'w')
+    file.write("successful songs: " + str(succesful_songs) + "\n")
+    file.write("successful sequences: " + str(successful_sequences) + "\n")
+    file.write("all songs: " + str(all_songs) + "\n")
+    file.close()
     return metadata
 
 
