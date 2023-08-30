@@ -74,12 +74,14 @@ class db_processing:
         # Define the return type of the function
         self.cpp_lib.extract_note_sequences_from_midi.restype = self.sequence_array
 
-    def song_from_midi_nesmdb(self, file_path):
+    def song_from_midi_nesmdb(self, file_path, transposition, transposition_plus):
 
         midi_file_loc = ctypes.c_char_p(file_path.encode())
+        transposition_cpp = ctypes.c_int(transposition)
+        transposition_plus_cpp = ctypes.c_bool(transposition_plus)
 
         # Call the C++ function
-        sequence_array = self.cpp_lib.extract_note_sequences_from_midi(midi_file_loc)
+        sequence_array = self.cpp_lib.extract_note_sequences_from_midi(midi_file_loc, transposition_cpp, transposition_plus_cpp)
 
         # Convert the array to a NumPy array
         sequences_ = np.zeros((sequence_array.dim1, sequence_array.dim2, sequence_array.dim3), dtype=np.int32)
@@ -319,42 +321,12 @@ class multitrack_vae:
 
 if __name__ == "__main__":
 
-    mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/5/5eefc5044ddb69612ee58d7a5da12ca0.mid"
-
-    current_dir = os.getcwd()
-    model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
-    nesmdb_shared_library_rel_path = "ext_nseq_lakh_lib.so"
-    db_type = "lakh"
-
-    batch_size = 32
-    temperature = 0.2
-    total_steps = 512
-
-    model_path = os.path.join(current_dir, model_rel_path)
-    nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
-
-    db_proc = db_processing(nesmdb_shared_library_path, db_type)
-    song_data = db_proc.song_from_midi_lakh(mario_file_path)
-
-    if song_data is not None:
-        vae = multitrack_vae(model_path, batch_size)
-
-        song_data_reshaped = song_data.reshape(song_data.shape[0]*song_data.shape[1], 4, 64)
-        z = vae.encode_sequence(song_data_reshaped)
-
-        new_song_data = vae.decode_sequence(z, total_steps, temperature)
-
-        midi = db_proc.midi_from_song(new_song_data)
-
-        midi.save("new_song.mid")
-
-
-    # mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid"
+    # mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/5/5eefc5044ddb69612ee58d7a5da12ca0.mid"
     #
     # current_dir = os.getcwd()
     # model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
-    # nesmdb_shared_library_rel_path = "ext_nseq_nesmdb_lib.so"
-    # db_type = "nesmdb"
+    # nesmdb_shared_library_rel_path = "ext_nseq_lakh_lib.so"
+    # db_type = "lakh"
     #
     # batch_size = 32
     # temperature = 0.2
@@ -364,15 +336,47 @@ if __name__ == "__main__":
     # nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
     #
     # db_proc = db_processing(nesmdb_shared_library_path, db_type)
-    # song_data = db_proc.song_from_midi_nesmdb(mario_file_path)
+    # song_data = db_proc.song_from_midi_lakh(mario_file_path)
     #
-    # vae = multitrack_vae(model_path, batch_size)
+    # if song_data is not None:
+    #     vae = multitrack_vae(model_path, batch_size)
     #
-    # song_data_reshaped = song_data[:, 1:, :]
-    # z = vae.encode_sequence(song_data_reshaped)
+    #     song_data_reshaped = song_data.reshape(song_data.shape[0]*song_data.shape[1], 4, 64)
+    #     z = vae.encode_sequence(song_data_reshaped)
     #
-    # new_song_data = vae.decode_sequence(z, total_steps, temperature)
+    #     new_song_data = vae.decode_sequence(z, total_steps, temperature)
     #
-    # midi = db_proc.midi_from_song(new_song_data)
+    #     midi = db_proc.midi_from_song(new_song_data)
     #
-    # midi.save("new_song.mid")
+    #     midi.save("new_song.mid")
+
+
+    mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid"
+
+    current_dir = os.getcwd()
+    model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
+    nesmdb_shared_library_rel_path = "ext_nseq_nesmdb_lib.so"
+    db_type = "nesmdb"
+
+    batch_size = 32
+    temperature = 0.2
+    total_steps = 512
+
+    transposition = 0
+    transposition_plus = True
+
+    model_path = os.path.join(current_dir, model_rel_path)
+    nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
+
+    db_proc = db_processing(nesmdb_shared_library_path, db_type)
+    vae = multitrack_vae(model_path, batch_size)
+
+    song_data = db_proc.song_from_midi_nesmdb(mario_file_path, transposition, transposition_plus)
+    song_data_reshaped = song_data[:, 1:, :]
+    z = vae.encode_sequence(song_data_reshaped)
+
+    new_song_data = vae.decode_sequence(z, total_steps, temperature)
+
+    midi = db_proc.midi_from_song(new_song_data)
+
+    midi.save("new_song.mid")

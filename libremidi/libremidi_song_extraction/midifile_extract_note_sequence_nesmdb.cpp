@@ -265,7 +265,7 @@ void extract_notes(libremidi::reader& r, std::vector<std::vector<note>>& all_not
 
 }
 
-void extract_sequence(std::vector<std::vector<note>>& all_notes,std::vector<std::vector<music_sequence_event>>& sequence, int block_start, int block_end, std::vector<int>& midi_programs){
+void extract_sequence(std::vector<std::vector<note>> all_notes,std::vector<std::vector<music_sequence_event>>& sequence, int block_start, int block_end, std::vector<int>& midi_programs, int transpositon, bool transposition_plus){
 
   std::vector<std::vector<note>> block_notes(all_notes.size(), std::vector<note>());
 
@@ -285,6 +285,7 @@ void extract_sequence(std::vector<std::vector<note>>& all_notes,std::vector<std:
         if(all_notes[i][j].end->tick > block_end){
           all_notes[i][j].end->tick = block_end;
         }
+
 
         unique_time_ticks.insert(all_notes[i][j].start->tick);
         unique_time_ticks.insert(all_notes[i][j].end->tick);
@@ -360,22 +361,69 @@ void extract_sequence(std::vector<std::vector<note>>& all_notes,std::vector<std:
 
           // note OFF EVENTS
           if(block_note->m.get_message_type() == libremidi::message_type::NOTE_OFF || (block_note->m.get_message_type() == libremidi::message_type::NOTE_ON && (int)block_note->m.bytes[2] == 0)) {
-            if(ticks_elapsed > 0){
-              sequence[i].push_back(music_sequence_event{3, ticks_elapsed});
-              ticks_elapsed = 0;
+            int block_note_val = (int)block_note->m.bytes[1];
+            bool is_note_valid = false;
+
+            if(transposition_plus){
+              block_note_val += transpositon;
             }
-          
-            sequence[i].push_back(music_sequence_event{2, (int)block_note->m.bytes[1]});
+            else{
+              block_note_val -= transpositon;
+            }
+
+            if(i == block_notes.size() - 1){
+              if(block_note_val >= 0 && block_note_val <= 15){
+                is_note_valid = true;
+              }
+            }
+            else{
+              if(block_note_val >= 0 && block_note_val <= 127){
+                is_note_valid = true;
+              }
+            }
+
+            if(is_note_valid){
+              if(ticks_elapsed > 0){
+                sequence[i].push_back(music_sequence_event{3, ticks_elapsed});
+                ticks_elapsed = 0;
+              }
+              sequence[i].push_back(music_sequence_event{2, block_note_val});
+            }
 
           }
 
           // note ON EVENTS
           else if(block_note->m.get_message_type() == libremidi::message_type::NOTE_ON){
-            if(ticks_elapsed > 0){
-              sequence[i].push_back(music_sequence_event{3, ticks_elapsed});
-              ticks_elapsed = 0;
+
+            int block_note_val = (int)block_note->m.bytes[1];
+            bool is_note_valid = false;
+
+            if(transposition_plus){
+              block_note_val += transpositon;
             }
-            sequence[i].push_back(music_sequence_event{1, block_note->m.bytes[1]});
+            else{
+              block_note_val -= transpositon;
+            }
+
+            if(i == block_notes.size() - 1){
+              if(block_note_val >= 0 && block_note_val <= 15){
+                is_note_valid = true;
+              }
+            }
+            else{
+              if(block_note_val >= 0 && block_note_val <= 127){
+                is_note_valid = true;
+              }
+            }
+
+            if(is_note_valid){
+              if(ticks_elapsed > 0){
+                sequence[i].push_back(music_sequence_event{3, ticks_elapsed});
+                ticks_elapsed = 0;
+              }
+              sequence[i].push_back(music_sequence_event{1, block_note_val});
+            }
+   
           }
 
         }
@@ -459,7 +507,7 @@ bool parse_midi(std::vector<uint8_t>& bytes, libremidi::reader& r){
 }
 
 
-sequence_array extract_note_sequences_from_midi(char* midi_file_location){
+sequence_array extract_note_sequences_from_midi(char* midi_file_location, int transposition, bool transposition_plus){
 
   std::ifstream file{midi_file_location, std::ios::binary};
   if(!file.is_open())
@@ -540,7 +588,7 @@ sequence_array extract_note_sequences_from_midi(char* midi_file_location){
     measure_end = (i+1)*96;
     std::vector<std::vector<music_sequence_event>> sequence(tracks_num, std::vector<music_sequence_event>());
 
-    extract_sequence(all_notes, sequence, measure_start, measure_end, program_nums);
+    extract_sequence(all_notes, sequence, measure_start, measure_end, program_nums, transposition, transposition_plus);
 
     // std::cout << i << "-extracted" << std::endl;
     all_sequences.push_back(sequence);
@@ -623,9 +671,9 @@ int main(int argc, char** argv)
 {
 
   char* midi_file_url = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid";
-  int transposition = 1;
-  bool transposition_sign = true;
-  extract_note_sequences_from_midi(midi_file_url);  
+  int transposition = 0;
+  bool transposition_sign = false;
+  extract_note_sequences_from_midi(midi_file_url, transposition, transposition_sign);  
 
 }
 

@@ -43,16 +43,16 @@ import numpy as np
 import pickle
 import json
 
-metadata = pickle.load(open("./db_metadata/nesmdb/nesmdb_updated2808_BACKUP.pkl", "rb"))
-
-file = open('./db_metadata/nesmdb/nesmdb_updated2808.pkl', 'wb')
-pickle.dump(metadata, file)
-file.close()
-
-y = json.dumps(metadata, indent=4)
-file_json = open('db_metadata/nesmdb/nesmdb_meta_json2808.json', 'w')
-file_json.write(y)
-file_json.close()
+# metadata = pickle.load(open("./db_metadata/nesmdb/nesmdb_updated2808_BACKUP.pkl", "rb"))
+#
+# file = open('./db_metadata/nesmdb/nesmdb_updated2808.pkl', 'wb')
+# pickle.dump(metadata, file)
+# file.close()
+#
+# y = json.dumps(metadata, indent=4)
+# file_json = open('db_metadata/nesmdb/nesmdb_meta_json2808.json', 'w')
+# file_json.write(y)
+# file_json.close()
 
 
 
@@ -74,3 +74,6 @@ file_json.close()
 #
 #
 # bbb = np.take_along_axis(aaa, fb256_slices, axis=-1)
+#
+# hh = pickle.load(open("./lakh_encoded/0/03f3e2c02f0f61e8142fd1049bd6dd5d_enc.pkl", "rb"))
+# print("hh")

@@ -90,7 +90,7 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
                     save_metadata(metadata)
 
             else:
-                song_data = db_proc.song_from_midi_nesmdb(song_full_path)
+                song_data = db_proc.song_from_midi_nesmdb(song_full_path, transposition, transposition_plus)
                 song_data = song_data[:, 1:, :]
 
                 song_measures = len(song_data)

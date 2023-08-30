@@ -7,7 +7,6 @@
 /lmd_full
 /nesmdb_encoded
 /lakh_encoded
-a.out
-ext_nseq_lakh_lib.so
-ext_nseq_nesmdb_lib.so
+*.out
+*.so
 nesmdb_stacked.pkl
