@@ -50,6 +50,8 @@ def lakh_encode(vae, db_proc, fb256_mask):
 
     metadata = pickle.load(open(metadata_full_path_pkl, "rb"))
     count = 0
+    succesful_songs = 0
+    successful_sequences = 0
     all_songs = len(metadata.keys())
 
     for song in metadata.keys():
@@ -79,6 +81,12 @@ def lakh_encode(vae, db_proc, fb256_mask):
             song_rel_path = metadata[song]["url"]
             song_abs_path = os.path.join(current_dir, song_rel_path)
             song_data = db_proc.song_from_midi_lakh(song_abs_path)
+
+            if song_data is None:
+                count += 1
+                print("unsuccessful")
+                continue
+
             song_data_sequences = song_data.shape[0]
 
             song_data_reshaped = song_data.reshape(song_data_sequences * song_min_measures, 4, 64)
@@ -90,7 +98,8 @@ def lakh_encode(vae, db_proc, fb256_mask):
             file = open(encoded_song_abs_path, 'wb')
             pickle.dump(z_reshaped, file)
             file.close()
-
+            succesful_songs +=1
+            successful_sequences += song_data_sequences
             metadata[song]["encoded_song_path"] = encoded_song_rel_path
             save_metadata(metadata)
 
@@ -98,6 +107,9 @@ def lakh_encode(vae, db_proc, fb256_mask):
         print(f"{count}/{all_songs} time-{time_diff}")
         count += 1
 
+    print(f"successful songs-{succesful_songs}")
+    print(f"successful sequences-{successful_sequences}")
+    print(f"all songs-{all_songs}")
     return metadata
 
 
