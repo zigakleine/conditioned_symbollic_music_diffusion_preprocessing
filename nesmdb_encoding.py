@@ -91,6 +91,8 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc):
 
             else:
                 song_data = db_proc.song_from_midi_nesmdb(song_full_path)
+                song_data = song_data[:, 1:, :]
+
                 song_measures = len(song_data)
 
                 song_data_extended = []
@@ -106,7 +108,6 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc):
                             song_data_extended.append(song_data[i % song_measures])
                     else:
                         song_data_extended = song_data
-
 
                 z = vae.encode_sequence(np.array(song_data_extended))
 

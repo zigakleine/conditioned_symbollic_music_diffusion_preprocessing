@@ -44,8 +44,6 @@ for filename in os.listdir(nesmdb_flat_abs_path):
         print(f"{count}/{all_songs} time-{time_diff}")
         count += 1
 
-        if count > 50:
-            break
 
 z_stacked = np.vstack(z_list)
 print("stacked")
