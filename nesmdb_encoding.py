@@ -160,7 +160,7 @@ if __name__ == "__main__":
     transposition_plus = True
     desired_instruments = ["p1", "p2", "tr", "no"]
 
-    slices_rel_path = "fb256_slices.pkl"
+    slices_rel_path = "fb256_slices_76.pkl"
     slices_abs_path = os.path.join(current_dir, slices_rel_path)
     fb256_slices = pickle.load(open(slices_abs_path, "rb"))
     fb256_slices = np.array(fb256_slices)

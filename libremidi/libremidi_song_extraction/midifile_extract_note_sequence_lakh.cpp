@@ -899,7 +899,7 @@ sequence_array extract_note_sequences_from_midi(char* midi_file_location)
     return sequence_array{NULL, 0, 0, 0, 0, 0};
   }
 
-  // std::cout << std::endl << std::endl << std::endl;
+  std::cout << std::endl << std::endl << std::endl;
   int max_events = 64;
   int blocks_num = all_blocks_sequences.size();
   // [blocks_num][sequence_length_measures][nes_tracks_num][max_events]
@@ -907,9 +907,9 @@ sequence_array extract_note_sequences_from_midi(char* midi_file_location)
 
   for(int h = 0; h < blocks_num; h++){
     sequences_[h] = new int**[sequence_length_measures];
-    // std::cout << "block-" << h << std::endl; 
+    std::cout << "block-" << h << std::endl; 
     for(int i = 0; i < sequence_length_measures; i++){
-      // std::cout << "block-" << h << "__measure-" << i << std::endl; 
+      std::cout << "block-" << h << "__measure-" << i << std::endl; 
       sequences_[h][i] = new int*[nes_tracks_num];
       for(int j = 0; j < nes_tracks_num; j++){
         sequences_[h][i][j] = new int[max_events];
@@ -918,7 +918,7 @@ sequence_array extract_note_sequences_from_midi(char* midi_file_location)
           sequences_[h][i][j][k] = -1;
 
           if(k < all_blocks_sequences[h][i][j].size()){
-            // std::cout << all_blocks_sequences[h][i][j][k].event_type << "-" << all_blocks_sequences[h][i][j][k].event_value << " ";
+            std::cout << all_blocks_sequences[h][i][j][k].event_type << "-" << all_blocks_sequences[h][i][j][k].event_value << " ";
           
             if(all_blocks_sequences[h][i][j][k].event_type == 0){
               // start token
@@ -950,9 +950,9 @@ sequence_array extract_note_sequences_from_midi(char* midi_file_location)
           }   
 
         }
-        // std::cout << std::endl;
+        std::cout << std::endl;
       }
-      // std::cout << std::endl << std::endl;
+      std::cout << std::endl << std::endl;
     } 
 
     // std::cout << std::endl << std::endl; 
@@ -987,7 +987,8 @@ int main(int argc, char** argv)
 
   // char* midi_file_url = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/0/0936ab6f223888c0009d194fd4520e6d.mid";
   // char* midi_file_url = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/0/046e8798271fbcd61f394b2bd1a6dd0b.mid";
-  char* midi_file_url = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/0/001a5555e7b2fc9c81d76458a3a08982.mid";
+  // char* midi_file_url = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/0/001a5555e7b2fc9c81d76458a3a08982.mid";
+  char* midi_file_url = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid";
   extract_note_sequences_from_midi(midi_file_url);  
 
 }

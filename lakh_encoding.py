@@ -139,7 +139,7 @@ for i in range(16):
     db_proc = db_processing(nesmdb_shared_library_path, db_type)
     vae = multitrack_vae(model_path, batch_size)
 
-    slices_rel_path = "fb256_slices.pkl"
+    slices_rel_path = "fb256_slices_76.pkl"
     slices_abs_path = os.path.join(current_dir, slices_rel_path)
     fb256_slices = pickle.load(open(slices_abs_path, "rb"))
     fb256_slices = np.array(fb256_slices)
