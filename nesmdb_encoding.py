@@ -30,32 +30,35 @@ def save_metadata(metadata):
     file_json.close()
 
 
-def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc ):
+def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc):
 
-    times = []
+
     output_folder = "nesmdb_encoded"
 
-    encoded_vectors_base_url = os.getcwd()
 
-    all_encodings_dir = os.path.join(encoded_vectors_base_url, output_folder)
+    all_encodings_dir = os.path.join(current_dir, output_folder)
     if not os.path.exists(all_encodings_dir):
         os.mkdir(all_encodings_dir)
 
     metadata = pickle.load(open(metadata_full_path_pkl, "rb"))
 
-    song_counter = 0
+    valid_songs_counter = 0
+    valid_sequences_counter = 0
+    all_songs_counter = 0
     transposition_sign = "+" if transposition_plus else "-"
 
     for game in metadata.keys():
 
         # create a directory for current_songs encoded tensors
-        current_game_dir = os.path.join(encoded_vectors_base_url, output_folder, game)
+        current_game_dir = os.path.join(current_dir, output_folder, game)
         if not os.path.exists(current_game_dir):
             os.mkdir(current_game_dir)
 
         # iterate through all songs in game
         songs = metadata[game]["songs"]
         for song in songs:
+
+            all_songs_counter+=1
 
             is_encodable = song["is_encodable"]
             encoded_song_urls = song["encoded_song_urls"]
@@ -69,27 +72,26 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc )
             instruments_str = "-".join(instruments)
             encoded_song_file_name = str(song["number"] - 1) + "*" + transposition_sign + str(
                 transposition) + "*" + instruments_str + ".pkl"
-            encoded_song_url = os.path.join(encoded_vectors_base_url, output_folder, game, encoded_song_file_name)
+            encoded_song_rel_path = os.path.join(output_folder, game, encoded_song_file_name)
+            encoded_song_abs_path = os.path.join(current_dir, encoded_song_rel_path)
 
             time_start = time.time()
             # preveri če željena transpozicija/ kombinacija trackov že obstaja, če ja skipaš,
             # sicer jo narediš + dodaš url v seznam urljev
-            if os.path.isfile(encoded_song_url):
+            if os.path.isfile(encoded_song_abs_path):
 
-                if encoded_song_url in encoded_song_urls:
+                if encoded_song_rel_path in encoded_song_urls:
                     # encoding already exists
                     continue
                 else:
                     # encoding exists on disk but not in metadata
-                    encoded_song_urls.append(encoded_song_url)
+                    encoded_song_urls.append(encoded_song_rel_path)
                     song["encoded_song_urls"] = encoded_song_urls
                     save_metadata(metadata)
 
             else:
                 song_data = db_proc.song_from_midi_nesmdb(song_full_path)
                 song_measures = len(song_data)
-
-                # handle transposition !!!!
 
                 song_data_extended = []
 
@@ -114,20 +116,23 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc )
                 new_shape = (num_batches, batch_size, z.shape[1])
                 reshaped_z = z[:num_batches * batch_size].reshape(new_shape)
 
-                file = open(encoded_song_url, 'wb')
+                valid_sequences_counter += reshaped_z.shape[0]
+                file = open(encoded_song_abs_path, 'wb')
                 pickle.dump(reshaped_z, file)
                 file.close()
 
-                encoded_song_urls.append(encoded_song_url)
+                encoded_song_urls.append(encoded_song_rel_path)
                 song["encoded_song_urls"] = encoded_song_urls
                 save_metadata(metadata)
 
 
             time_end = time.time()
             time_diff = time_end - time_start
-            times.append(time_diff)
-            print(game, str(song["number"] - 1), "time-" + str(time_diff), "avg-" + str(sum(times) / len(times)) )
+            print(valid_songs_counter, game, str(song["number"] - 1), "time-" + str(time_diff))
+            valid_songs_counter += 1
 
+    print(f"valid_songs-{valid_songs_counter}")
+    print(f"valid_sequences-{valid_sequences_counter}")
     return metadata
 
 

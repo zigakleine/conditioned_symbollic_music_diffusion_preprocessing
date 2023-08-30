@@ -548,13 +548,13 @@ sequence_array extract_note_sequences_from_midi(char* midi_file_location){
 
   // std::cout << "alldone"  << std::endl;
 
-  // std::cout << std::endl << std::endl << std::endl;
+  std::cout << std::endl << std::endl << std::endl;
   int max_events = 64;
   // [sequence_length_measures][tracks_num][max_events]
   int*** sequences_ = new int** [sequence_length_measures];
   for(int i = 0; i < sequence_length_measures; i++){
     sequences_[i] = new int*[tracks_num];
-    // std::cout << "measure-" << i << std::endl;
+    std::cout << "measure-" << i << std::endl;
     for(int j = 0; j < tracks_num; j++){
       sequences_[i][j] = new int[max_events];
       for(int k = 0; k < max_events; k++){
@@ -563,7 +563,7 @@ sequence_array extract_note_sequences_from_midi(char* midi_file_location){
 
         if(k < all_sequences[i][j].size()){
 
-          // std::cout << all_sequences[i][j][k].event_type << "-" << all_sequences[i][j][k].event_value << " ";
+          std::cout << all_sequences[i][j][k].event_type << "-" << all_sequences[i][j][k].event_value << " ";
           if(all_sequences[i][j][k].event_type == 0){
             // start token
   
@@ -594,9 +594,9 @@ sequence_array extract_note_sequences_from_midi(char* midi_file_location){
         }   
 
       }
-      // std::cout << std::endl;
+      std::cout << std::endl;
     }
-    // std::cout << std::endl << std::endl;
+    std::cout << std::endl << std::endl;
   }
 
   // std::cout << std::endl << std::endl;
@@ -623,6 +623,8 @@ int main(int argc, char** argv)
 {
 
   char* midi_file_url = "/Users/zigakleine/Desktop/scraping_and_cppmidi/nesmdb_flat/378_WaiWaiWorld2_SOS__ParsleyJou_10_11BlossomsofOedo2.mid";
+  int transposition = 1;
+  bool transposition_sign = True;
   extract_note_sequences_from_midi(midi_file_url);  
 
 }
