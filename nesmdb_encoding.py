@@ -30,7 +30,7 @@ def save_metadata(metadata):
     file_json.close()
 
 
-def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc):
+def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, fb256_mask):
 
 
     output_folder = "nesmdb_encoded"
@@ -117,6 +117,8 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc):
                 new_shape = (num_batches, batch_size, z.shape[1])
                 reshaped_z = z[:num_batches * batch_size].reshape(new_shape)
 
+                reshaped_z = reshaped_z[:, :, fb256_mask]
+
                 valid_sequences_counter += reshaped_z.shape[0]
                 file = open(encoded_song_abs_path, 'wb')
                 pickle.dump(reshaped_z, file)
@@ -134,6 +136,7 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc):
 
     print(f"valid_songs-{valid_songs_counter}")
     print(f"valid_sequences-{valid_sequences_counter}")
+    print(f"all_songs-{all_songs_counter}")
     return metadata
 
 
@@ -157,6 +160,13 @@ if __name__ == "__main__":
     transposition_plus = True
     desired_instruments = ["p1", "p2", "tr", "no"]
 
-    metadata = nesmdb_encode(transposition, transposition_plus, desired_instruments, vae, db_proc)
+    slices_rel_path = "fb256_slices.pkl"
+    slices_abs_path = os.path.join(current_dir, slices_rel_path)
+    fb256_slices = pickle.load(open(slices_abs_path, "rb"))
+    fb256_slices = np.array(fb256_slices)
 
+    fb256_mask = np.zeros((512,), dtype=bool)
+    fb256_mask[fb256_slices] = True
+
+    metadata = nesmdb_encode(transposition, transposition_plus, desired_instruments, vae, db_proc, fb256_mask)
     save_metadata(metadata)

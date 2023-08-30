@@ -53,3 +53,24 @@ y = json.dumps(metadata, indent=4)
 file_json = open('db_metadata/nesmdb/nesmdb_meta_json2808.json', 'w')
 file_json.write(y)
 file_json.close()
+
+
+
+
+
+# import numpy as np
+# import pickle
+#
+# fb256_slices = pickle.load(open('./fb256_slices.pkl', "rb"))
+# fb256_slices = np.array(fb256_slices)
+#
+# fb256_mask = np.zeros((512,), dtype=bool)
+# fb256_mask[fb256_slices] = True
+#
+#
+# aaa = np.random.rand(3, 32, 512)
+#
+# bbb = aaa[:, :, fb256_mask]
+#
+#
+# bbb = np.take_along_axis(aaa, fb256_slices, axis=-1)

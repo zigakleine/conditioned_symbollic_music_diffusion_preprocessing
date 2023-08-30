@@ -34,7 +34,7 @@ def save_metadata(metadata):
     file_json.close()
 
 
-def lakh_encode(vae, db_proc):
+def lakh_encode(vae, db_proc, fb256_mask):
 
     output_folder = "lakh_encoded"
 
@@ -85,6 +85,8 @@ def lakh_encode(vae, db_proc):
             z = vae.encode_sequence(song_data_reshaped)
             z_reshaped = z.reshape(song_data_sequences, song_min_measures, z.shape[1])
 
+            z_reshaped = z_reshaped[:, :, fb256_mask]
+
             file = open(encoded_song_abs_path, 'wb')
             pickle.dump(z_reshaped, file)
             file.close()
@@ -116,5 +118,13 @@ if __name__ == "__main__":
     db_proc = db_processing(nesmdb_shared_library_path, db_type)
     vae = multitrack_vae(model_path, batch_size)
 
-    metadata = lakh_encode(vae, db_proc)
+    slices_rel_path = "fb256_slices.pkl"
+    slices_abs_path = os.path.join(current_dir, slices_rel_path)
+    fb256_slices = pickle.load(open(slices_abs_path, "rb"))
+    fb256_slices = np.array(fb256_slices)
+
+    fb256_mask = np.zeros((512,), dtype=bool)
+    fb256_mask[fb256_slices] = True
+
+    metadata = lakh_encode(vae, db_proc, fb256_mask)
     save_metadata(metadata)
