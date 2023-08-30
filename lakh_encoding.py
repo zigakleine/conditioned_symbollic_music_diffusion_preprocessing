@@ -6,21 +6,8 @@ import re
 import time
 from multitrack_VAE import db_processing, multitrack_vae, check_gpus
 
-song_min_measures = 32
-current_dir = os.getcwd()
-
-subdirectories = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
-index = 0
-subdirectory = subdirectories[index]
-
-db_metadata_pkl_rel_path = "db_metadata/lakh/lakh_2908_" + subdirectory + ".pkl"
 
 
-db_metadata_json_rel_path = "db_metadata/lakh/lakh_json_2908_" + subdirectory + ".json"
-
-
-metadata_full_path_pkl = os.path.join(current_dir, db_metadata_pkl_rel_path)
-metadata_full_path_json = os.path.join(current_dir, db_metadata_json_rel_path)
 
 
 def save_metadata(metadata):
@@ -120,7 +107,22 @@ def lakh_encode(vae, db_proc, fb256_mask):
     return metadata
 
 
-if __name__ == "__main__":
+
+for i in range(16):
+
+    song_min_measures = 32
+    current_dir = os.getcwd()
+
+    subdirectories = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
+
+    subdirectory = subdirectories[i]
+
+    db_metadata_pkl_rel_path = "db_metadata/lakh/lakh_2908_" + subdirectory + ".pkl"
+
+    db_metadata_json_rel_path = "db_metadata/lakh/lakh_json_2908_" + subdirectory + ".json"
+
+    metadata_full_path_pkl = os.path.join(current_dir, db_metadata_pkl_rel_path)
+    metadata_full_path_json = os.path.join(current_dir, db_metadata_json_rel_path)
 
     check_gpus()
 
