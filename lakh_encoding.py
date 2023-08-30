@@ -108,10 +108,36 @@ def lakh_encode(vae, db_proc, fb256_mask):
 
 
 
+
+
+current_dir = os.getcwd()
+model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
+nesmdb_shared_library_rel_path = "ext_nseq_lakh_lib.so"
+
+batch_size = 32
+
+model_path = os.path.join(current_dir, model_rel_path)
+
+nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
+db_type = "lakh"
+
+
+db_proc = db_processing(nesmdb_shared_library_path, db_type)
+vae = multitrack_vae(model_path, batch_size)
+
+slices_rel_path = "fb256_slices_76.pkl"
+slices_abs_path = os.path.join(current_dir, slices_rel_path)
+fb256_slices = pickle.load(open(slices_abs_path, "rb"))
+fb256_slices = np.array(fb256_slices)
+
+fb256_mask = np.zeros((512,), dtype=bool)
+fb256_mask[fb256_slices] = True
+
+check_gpus()
+
 for i in range(16):
 
     song_min_measures = 32
-    current_dir = os.getcwd()
 
     subdirectories = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
 
@@ -124,28 +150,6 @@ for i in range(16):
     metadata_full_path_pkl = os.path.join(current_dir, db_metadata_pkl_rel_path)
     metadata_full_path_json = os.path.join(current_dir, db_metadata_json_rel_path)
 
-    check_gpus()
-
-    model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
-    nesmdb_shared_library_rel_path = "ext_nseq_lakh_lib.so"
-
-    batch_size = 32
-
-    model_path = os.path.join(current_dir, model_rel_path)
-
-    nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
-    db_type = "lakh"
-
-    db_proc = db_processing(nesmdb_shared_library_path, db_type)
-    vae = multitrack_vae(model_path, batch_size)
-
-    slices_rel_path = "fb256_slices_76.pkl"
-    slices_abs_path = os.path.join(current_dir, slices_rel_path)
-    fb256_slices = pickle.load(open(slices_abs_path, "rb"))
-    fb256_slices = np.array(fb256_slices)
-
-    fb256_mask = np.zeros((512,), dtype=bool)
-    fb256_mask[fb256_slices] = True
 
     metadata = lakh_encode(vae, db_proc, fb256_mask)
     save_metadata(metadata)
