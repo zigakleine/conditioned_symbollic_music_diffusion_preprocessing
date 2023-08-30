@@ -988,7 +988,7 @@ int main(int argc, char** argv)
   // char* midi_file_url = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/0/0936ab6f223888c0009d194fd4520e6d.mid";
   // char* midi_file_url = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/0/046e8798271fbcd61f394b2bd1a6dd0b.mid";
   // char* midi_file_url = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/0/001a5555e7b2fc9c81d76458a3a08982.mid";
-  char* midi_file_url = "~/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid";
+  char* midi_file_url = "/home/zigakleine/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid";
   extract_note_sequences_from_midi(midi_file_url);  
 
 }
