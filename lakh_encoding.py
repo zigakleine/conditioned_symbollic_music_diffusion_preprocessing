@@ -79,11 +79,14 @@ def lakh_encode(vae, db_proc):
             song_rel_path = metadata[song]["url"]
             song_abs_path = os.path.join(current_dir, song_rel_path)
             song_data = db_proc.song_from_midi_lakh(song_abs_path)
+            song_data_sequences = song_data.shape[0]
 
-            z = vae.encode_sequence(song_data)
+            song_data_reshaped = song_data.reshape(song_data_sequences * song_min_measures, 4, 64)
+            z = vae.encode_sequence(song_data_reshaped)
+            z_reshaped = z.reshape(song_data_sequences, song_min_measures, z.shape[1])
 
             file = open(encoded_song_abs_path, 'wb')
-            pickle.dump(z, file)
+            pickle.dump(z_reshaped, file)
             file.close()
 
             metadata[song]["encoded_song_path"] = encoded_song_rel_path
