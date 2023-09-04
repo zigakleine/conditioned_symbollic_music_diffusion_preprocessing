@@ -6,6 +6,10 @@ import re
 import time
 from multitrack_VAE import db_processing, multitrack_vae, check_gpus
 
+instruments_dict = {"p1": 0, "p2": 1, "tr": 2, "no": 3}
+
+run_info_dir =  "nesmdb_run_info"
+
 song_min_measures = 32
 current_dir = os.getcwd()
 
@@ -93,6 +97,9 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
                 song_data = db_proc.song_from_midi_nesmdb(song_full_path, transposition, transposition_plus)
                 song_data = song_data[:, 1:, :]
 
+                instruments_order_indices = [instruments_dict[ins] for ins in instruments]
+                song_data = song_data[instruments_order_indices]
+
                 song_measures = len(song_data)
 
                 song_data_extended = []
@@ -134,39 +141,55 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
             print(valid_songs_counter, game, str(song["number"] - 1), "time-" + str(time_diff))
             valid_songs_counter += 1
 
+    instruments_str = "-".join(instruments)
+    run_info_file_name = transposition_sign + str(transposition) + "*" + instruments_str + "*run.txt"
     print(f"valid_songs-{valid_songs_counter}")
     print(f"valid_sequences-{valid_sequences_counter}")
     print(f"all_songs-{all_songs_counter}")
+
+    file_info_abs_dir = os.path.join(current_dir, run_info_dir, run_info_file_name)
+    file = open(file_info_abs_dir, 'w')
+    file.write("successful songs: " + str(valid_songs_counter) + "\n")
+    file.write("successful sequences: " + str(valid_sequences_counter) + "\n")
+    file.write("all songs: " + str(all_songs_counter) + "\n")
+    file.close()
     return metadata
 
 
-if __name__ == "__main__":
 
-    check_gpus()
 
-    model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
-    nesmdb_shared_library_rel_path = "ext_nseq_nesmdb_lib.so"
+desirend_instruments_permutations = [["p1", "p2", "tr", "no"], ["p2", "p1", "tr", "no"]]
+transpositions = ((False, 5), (False, 4), (False, 3), (False, 2), (False, 1), (True, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5), (True, 6))
 
-    batch_size = 32
+check_gpus()
 
-    model_path = os.path.join(current_dir, model_rel_path)
-    nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
-    db_type = "nesmdb"
+model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
+nesmdb_shared_library_rel_path = "ext_nseq_nesmdb_lib.so"
 
-    db_proc = db_processing(nesmdb_shared_library_path, db_type)
-    vae = multitrack_vae(model_path, batch_size)
+batch_size = 32
 
-    transposition = 0
-    transposition_plus = True
-    desired_instruments = ["p1", "p2", "tr", "no"]
+model_path = os.path.join(current_dir, model_rel_path)
+nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
+db_type = "nesmdb"
 
-    slices_rel_path = "fb256_slices_76.pkl"
-    slices_abs_path = os.path.join(current_dir, slices_rel_path)
-    fb256_slices = pickle.load(open(slices_abs_path, "rb"))
-    fb256_slices = np.array(fb256_slices)
+db_proc = db_processing(nesmdb_shared_library_path, db_type)
+vae = multitrack_vae(model_path, batch_size)
 
-    fb256_mask = np.zeros((512,), dtype=bool)
-    fb256_mask[fb256_slices] = True
+# transposition = 0
+# transposition_plus = True
+# desired_instruments = ["p1", "p2", "tr", "no"]
 
-    metadata = nesmdb_encode(transposition, transposition_plus, desired_instruments, vae, db_proc, fb256_mask)
-    save_metadata(metadata)
+slices_rel_path = "fb256_slices_76.pkl"
+slices_abs_path = os.path.join(current_dir, slices_rel_path)
+fb256_slices = pickle.load(open(slices_abs_path, "rb"))
+fb256_slices = np.array(fb256_slices)
+
+fb256_mask = np.zeros((512,), dtype=bool)
+fb256_mask[fb256_slices] = True
+
+
+for desired_instruments in desirend_instruments_permutations:
+    for transposition_plus, transposition in transpositions:
+
+        metadata = nesmdb_encode(transposition, transposition_plus, desired_instruments, vae, db_proc, fb256_mask)
+        save_metadata(metadata)

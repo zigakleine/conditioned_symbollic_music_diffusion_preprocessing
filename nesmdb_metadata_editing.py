@@ -30,20 +30,20 @@ for game in metadata.keys():
         # song["url"] = "/".join(song_path_split_rel)
         abs_song_path = os.path.join(current_dir, song_path)
 
-        song_data = db_proc.song_from_midi_nesmdb(abs_song_path)
-        song_measures = len(song_data)
-        if "is_looping" in song.keys():
-            is_looping = song["is_looping"]
-        else:
-            is_looping = False
-            song["is_looping"] = is_looping
+        # song_data = db_proc.song_from_midi_nesmdb(abs_song_path)
+        # song_measures = len(song_data)
+        # if "is_looping" in song.keys():
+        #     is_looping = song["is_looping"]
+        # else:
+        #     is_looping = False
+        #     song["is_looping"] = is_looping
 
-        is_encodable = True
+        # is_encodable = True
 
-        if song_measures < song_min_measures:
-            if not is_looping:
-                is_encodable = False
-        song["is_encodable"] = is_encodable
+        # if song_measures < song_min_measures:
+        #     if not is_looping:
+        #         is_encodable = False
+        # song["is_encodable"] = is_encodable
 
         all_songs += 1
         if song["is_encodable"]:
