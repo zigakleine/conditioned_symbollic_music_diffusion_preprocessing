@@ -98,7 +98,7 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
                 song_data = song_data[:, 1:, :]
 
                 instruments_order_indices = [instruments_dict[ins] for ins in instruments]
-                song_data = song_data[instruments_order_indices]
+                song_data = song_data[:, instruments_order_indices, :]
 
                 song_measures = len(song_data)
 
@@ -148,6 +148,11 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
     print(f"all_songs-{all_songs_counter}")
 
     file_info_abs_dir = os.path.join(current_dir, run_info_dir, run_info_file_name)
+
+    file_info_dir = os.path.join(current_dir, run_info_dir)
+    if not os.path.exists(file_info_dir):
+        os.mkdir(file_info_dir)
+
     file = open(file_info_abs_dir, 'w')
     file.write("successful songs: " + str(valid_songs_counter) + "\n")
     file.write("successful sequences: " + str(valid_sequences_counter) + "\n")
@@ -158,7 +163,7 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
 
 
 
-desirend_instruments_permutations = [["p1", "p2", "tr", "no"], ["p2", "p1", "tr", "no"]]
+desired_instruments_permutations = [["p1", "p2", "tr", "no"], ["p2", "p1", "tr", "no"]]
 transpositions = ((False, 5), (False, 4), (False, 3), (False, 2), (False, 1), (True, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5), (True, 6))
 
 check_gpus()
@@ -188,7 +193,7 @@ fb256_mask = np.zeros((512,), dtype=bool)
 fb256_mask[fb256_slices] = True
 
 
-for desired_instruments in desirend_instruments_permutations:
+for desired_instruments in desired_instruments_permutations:
     for transposition_plus, transposition in transpositions:
 
         metadata = nesmdb_encode(transposition, transposition_plus, desired_instruments, vae, db_proc, fb256_mask)
