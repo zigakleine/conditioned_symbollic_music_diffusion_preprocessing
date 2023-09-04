@@ -138,7 +138,7 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
 
             time_end = time.time()
             time_diff = time_end - time_start
-            print(valid_songs_counter, game, str(song["number"] - 1), "time-" + str(time_diff))
+            print(valid_songs_counter, game, str(song["number"] - 1), "time-" + str(time_diff), encoded_song_abs_path)
             valid_songs_counter += 1
 
     instruments_str = "-".join(instruments)
