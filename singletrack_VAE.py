@@ -146,6 +146,18 @@ class db_processing:
                             current_value = current_value // 8
                         sequences_[i, j, k] = current_value + 2
 
+        for i in range(len(sequences_)):
+            for j in range(len(sequences_[i])):
+                for k in range(len(sequences_[i][j])):
+                    current_element = sequences_[i][j][k]
+                    if k == 0:
+                        prev_element = 0
+                    else:
+                        prev_element = sequences_[i][j][k-1]
+
+                    if prev_element == 0 and current_element == 1:
+                        sequences_[i][j][k] = 0
+
         # for h in range(sequences_.shape[0]):
         #     print("block-" + str(h))
         #     for i in range(sequences_.shape[1]):

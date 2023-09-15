@@ -4,7 +4,7 @@ import numpy as np
 import json
 import re
 import time
-from multitrack_VAE import db_processing, multitrack_vae, check_gpus
+from singletrack_VAE import db_processing, singletrack_vae, check_gpus
 
 
 
@@ -76,11 +76,17 @@ def lakh_encode(vae, db_proc, fb256_mask):
 
             song_data_sequences = song_data.shape[0]
 
-            song_data_reshaped = song_data.reshape(song_data_sequences * song_min_measures, 4, 64)
+            song_data_reshaped = np.concatenate(song_data, axis=1)
             z = vae.encode_sequence(song_data_reshaped)
-            z_reshaped = z.reshape(song_data_sequences, song_min_measures, z.shape[1])
 
-            z_reshaped = z_reshaped[:, :, fb256_mask]
+            batch_size = (song_min_measures // 2) * 4
+            num_batches = len(z) // batch_size
+
+            new_shape = (num_batches, batch_size, z.shape[1])
+            z_reshaped = z[:num_batches * batch_size].reshape(new_shape)
+
+            if fb256_mask is not None:
+                z_reshaped = z_reshaped[:, :, fb256_mask]
 
             file = open(encoded_song_abs_path, 'wb')
             pickle.dump(z_reshaped, file)
@@ -111,27 +117,27 @@ def lakh_encode(vae, db_proc, fb256_mask):
 
 
 current_dir = os.getcwd()
-model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
-nesmdb_shared_library_rel_path = "ext_nseq_lakh_lib.so"
+model_rel_path = "cat-mel_2bar_big.tar"
+nesmdb_shared_library_rel_path = "ext_nseq_lakh_single_lib.so"
 
 batch_size = 32
 
 model_path = os.path.join(current_dir, model_rel_path)
 
 nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
-db_type = "lakh"
+db_type = "lakh_singletrack"
 
 
 db_proc = db_processing(nesmdb_shared_library_path, db_type)
-vae = multitrack_vae(model_path, batch_size)
+vae = singletrack_vae(model_path, batch_size)
 
-slices_rel_path = "fb256_slices_76.pkl"
-slices_abs_path = os.path.join(current_dir, slices_rel_path)
-fb256_slices = pickle.load(open(slices_abs_path, "rb"))
-fb256_slices = np.array(fb256_slices)
-
-fb256_mask = np.zeros((512,), dtype=bool)
-fb256_mask[fb256_slices] = True
+# slices_rel_path = "fb256_slices_76.pkl"
+# slices_abs_path = os.path.join(current_dir, slices_rel_path)
+# fb256_slices = pickle.load(open(slices_abs_path, "rb"))
+# fb256_slices = np.array(fb256_slices)
+#
+# fb256_mask = np.zeros((512,), dtype=bool)
+# fb256_mask[fb256_slices] = True
 
 check_gpus()
 
@@ -150,6 +156,5 @@ for i in range(16):
     metadata_full_path_pkl = os.path.join(current_dir, db_metadata_pkl_rel_path)
     metadata_full_path_json = os.path.join(current_dir, db_metadata_json_rel_path)
 
-
-    metadata = lakh_encode(vae, db_proc, fb256_mask)
+    metadata = lakh_encode(vae, db_proc, None)
     save_metadata(metadata)
