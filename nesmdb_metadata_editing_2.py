@@ -107,11 +107,11 @@ for game in metadata.keys():
         # if (composer == "Sato"):
         #     metadata[game]["composers"][i] = "Unknown"
 
-        if not (composer == "Unknown"):
-            if composer in composers:
-                composers[composer] += 1
-            else:
-                composers[composer] = 1
+
+        if composer in composers:
+            composers[composer] += 1
+        else:
+            composers[composer] = 1
 
     if len(metadata[game]["composers"]) > 1:
         for i, composer in enumerate(metadata[game]["composers"].copy()):
@@ -180,11 +180,11 @@ file_json.write(y)
 file_json.close()
 
 
-file = open('./db_metadata/nesmdb/nesmdb_updated2808.pkl', 'wb')
-pickle.dump(metadata, file)
-file.close()
-
-y = json.dumps(metadata, indent=4)
-file_json = open('db_metadata/nesmdb/nesmdb_meta_json2808.json', 'w')
-file_json.write(y)
-file_json.close()
+# file = open('./db_metadata/nesmdb/nesmdb_updated2808.pkl', 'wb')
+# pickle.dump(metadata, file)
+# file.close()
+#
+# y = json.dumps(metadata, indent=4)
+# file_json = open('db_metadata/nesmdb/nesmdb_meta_json2808.json', 'w')
+# file_json.write(y)
+# file_json.close()

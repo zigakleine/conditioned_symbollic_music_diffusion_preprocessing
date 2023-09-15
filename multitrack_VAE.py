@@ -3,16 +3,15 @@ import numpy as np
 import os
 import tensorflow.compat.v1 as tf
 import time
+from scipy.io import wavfile
 
-# from google.colab import files
-
-# import magenta.music as mm
+import magenta.music as mm
 # from magenta.music.sequences_lib import concatenate_sequences
 from magenta.models.music_vae import configs
 from magenta.models.music_vae.trained_model import TrainedModel
 
-from note_seq import midi_io, midi_file_to_note_sequence
-from note_seq import sequences_lib
+from note_seq import midi_io, synthesize, play_sequence
+from note_seq.sequences_lib import concatenate_sequences
 
 tf.disable_v2_behavior()
 print('Done!')
@@ -242,7 +241,8 @@ class db_processing:
             if mid.tracks[i].name == "no":
                 for event in mid.tracks[i]:
                     if event.type == "note_on" or event.type == "note_off":
-                        event.note = event.note // 8
+                        if event.note >= 16:
+                            event.note = event.note // 8
 
 
         return mid
@@ -290,6 +290,7 @@ class multitrack_vae:
             lengths.append(lengths_measure)
             controls.append(controls_measure)
 
+        self.model.sample()
         # start_time = time.time()
         z, _, _ = self.model.encode_tensors(inputs, lengths, controls)
         # end_time = time.time()
@@ -318,65 +319,138 @@ class multitrack_vae:
 
         return song_data
 
+SAMPLE_RATE = 44100
+SF2_PATH = './SGM-v2.01-Sal-Guit-Bass-V1.3.sf2'
+BAR_SECONDS = 2.0
+
+# def play(note_sequences):
+#   if not isinstance(note_sequences, list):
+#     note_sequences = [note_sequences]
+#   for ns in note_sequences:
+#     mm.play_sequence(ns, synth=mm.fluidsynth, sf2_path=SF2_PATH)
+#       play_sequence()
+
+
+def trim_sequences(seqs, num_seconds=BAR_SECONDS):
+  for i in range(len(seqs)):
+    seqs[i] = mm.extract_subsequence(seqs[i], 0.0, num_seconds)
+    seqs[i].total_time = num_seconds
 
 if __name__ == "__main__":
 
-    mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/0/0cad5284ec963f245059ef42230c6e63.mid"
+    # current_dir = os.getcwd()
+    # model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
+    # batch_size = 32
+    # total_steps = 512
+    # model_path = os.path.join(current_dir, model_rel_path)
+    # vae = multitrack_vae(model_path, batch_size)
+    # temperature = 0.2
+    # seqs = vae.model.sample(n=batch_size, length=total_steps, temperature=temperature)
 
-    current_dir = os.getcwd()
-    model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
-    nesmdb_shared_library_rel_path = "ext_nseq_lakh_lib.so"
-    db_type = "lakh"
+    #-------------------
 
-    batch_size = 32
-    temperature = 0.2
-    total_steps = 512
-
-    model_path = os.path.join(current_dir, model_rel_path)
-    nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
-
-    db_proc = db_processing(nesmdb_shared_library_path, db_type)
-    song_data = db_proc.song_from_midi_lakh(mario_file_path)
-
-    if song_data is not None:
-        vae = multitrack_vae(model_path, batch_size)
-
-        song_data_reshaped = song_data.reshape(song_data.shape[0]*song_data.shape[1], 4, 64)
-        z = vae.encode_sequence(song_data_reshaped)
-
-        new_song_data = vae.decode_sequence(z, total_steps, temperature)
-
-        midi = db_proc.midi_from_song(new_song_data)
-
-        midi.save("new_song.mid")
-
-    #
-    # mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid"
+    # mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/lmd_full/0/0cad5284ec963f245059ef42230c6e63.mid"
     #
     # current_dir = os.getcwd()
     # model_rel_path = "multitrack_vae_model/model_fb256.ckpt"
-    # nesmdb_shared_library_rel_path = "ext_nseq_nesmdb_lib.so"
-    # db_type = "nesmdb"
+    # nesmdb_shared_library_rel_path = "ext_nseq_lakh_lib.so"
+    # db_type = "lakh"
     #
     # batch_size = 32
     # temperature = 0.2
     # total_steps = 512
     #
-    # transposition = 0
-    # transposition_plus = True
-    #
     # model_path = os.path.join(current_dir, model_rel_path)
     # nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
     #
     # db_proc = db_processing(nesmdb_shared_library_path, db_type)
-    # vae = multitrack_vae(model_path, batch_size)
+    # song_data = db_proc.song_from_midi_lakh(mario_file_path)
     #
-    # song_data = db_proc.song_from_midi_nesmdb(mario_file_path, transposition, transposition_plus)
-    # song_data_reshaped = song_data[:, 1:, :]
-    # z = vae.encode_sequence(song_data_reshaped)
+    # if song_data is not None:
+    #     vae = multitrack_vae(model_path, batch_size)
     #
-    # new_song_data = vae.decode_sequence(z, total_steps, temperature)
+    #     song_data_reshaped = song_data.reshape(song_data.shape[0]*song_data.shape[1], 4, 64)
+    #     z = vae.encode_sequence(song_data_reshaped)
     #
-    # midi = db_proc.midi_from_song(new_song_data)
+    #     new_song_data = vae.decode_sequence(z, total_steps, temperature)
     #
-    # midi.save("new_song.mid")
+    #     midi = db_proc.midi_from_song(new_song_data)
+    #
+    #     midi.save("new_song.mid")
+
+    #-------------------
+
+
+    mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid"
+
+    current_dir = os.getcwd()
+    model_rel_path = "multitrack_vae_model_2/model.ckpt"
+    nesmdb_shared_library_rel_path = "ext_nseq_nesmdb_lib.so"
+    db_type = "nesmdb"
+    model_path = os.path.join(current_dir, model_rel_path)
+
+    batch_size = 32
+    temperature = 0.01
+    total_steps = 512
+
+
+
+    transposition = 0
+    transposition_plus = True
+
+    model_path = os.path.join(current_dir, model_rel_path)
+    nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
+
+    db_proc = db_processing(nesmdb_shared_library_path, db_type)
+    vae = multitrack_vae(model_path, batch_size)
+
+    song_data = db_proc.song_from_midi_nesmdb(mario_file_path, transposition, transposition_plus)
+    song_data_reshaped = song_data[:, 1:, :]
+
+
+    midi_actual = db_proc.midi_from_song(song_data_reshaped)
+
+    midi_actual.save("actual_mario.mid")
+
+    z = vae.encode_sequence(song_data_reshaped)
+
+    new_song_data = vae.decode_sequence(z, total_steps, temperature)
+
+    midi = db_proc.midi_from_song(new_song_data)
+
+    midi.save("mario.mid")
+
+
+
+
+
+    # config = configs.CONFIG_MAP['hier-multiperf_vel_1bar_med']
+    # model = TrainedModel(
+    #     config, batch_size=batch_size,
+    #     checkpoint_dir_or_path=model_path)
+    # model._config.data_converter._max_tensors_per_input = None
+    #
+    # seq = midi_io.midi_file_to_note_sequence(mario_file_path)
+    # index = 0
+    #
+    # uploaded_seqs = []
+    # _, tensors, _, _ = model._config.data_converter.to_tensors(seq)
+    # uploaded_seqs.extend(model._config.data_converter.from_tensors(tensors))
+    #
+    # trim_sequences(uploaded_seqs)
+    #
+    # z, _, _ = model.encode(uploaded_seqs)
+    # reconstructed_seq = model.decode(z, length=total_steps,
+    #                                  temperature=temperature)
+    #
+    # trim_sequences(reconstructed_seq)
+    #
+    # reconstructed_seq_ = concatenate_sequences(reconstructed_seq)
+    #
+    #
+    # array_of_floats = synthesize(reconstructed_seq_, 44100)
+    # normalizer = float(np.iinfo(np.int16).max)
+    # array_of_ints = np.array(np.asarray(array_of_floats) * normalizer,
+    #                          dtype=np.int16)
+    # wavfile.write("out.wav", 44100, array_of_ints)
+    # print('Reconstructed')

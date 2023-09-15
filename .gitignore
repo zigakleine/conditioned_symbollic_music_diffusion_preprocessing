@@ -10,3 +10,9 @@
 *.out
 *.so
 nesmdb_stacked.pkl
+/cat-mel_2bar_big.tar
+/a.out
+/vae_midis
+/log_lakh.txt
+/log_nesmdb.txt
+*.mid

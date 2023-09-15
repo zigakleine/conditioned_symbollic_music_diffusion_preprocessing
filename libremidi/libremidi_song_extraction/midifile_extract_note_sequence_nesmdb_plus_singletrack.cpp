@@ -41,6 +41,12 @@ struct sequence_array {
   int dim3;
 };
 
+struct sequence_array_singletrack {
+  int** sequence;
+  int dim1;
+  int dim2;
+};
+
 void test_library(){
   std::cout << "hehe" << std::endl;
 }
@@ -218,95 +224,6 @@ void quantize_notes(std::vector<std::vector<note>>& all_notes, int current_ticks
   }
   
 }
-
-
-void quantize_to_note_duration(libremidi::reader& r, int ticks_per_sixteenth){
-
-  std::vector<note> all_notes;
-
-  for (auto& track : r.tracks)
-  {
-
-    std::vector<libremidi::track_event*> active_notes;
-    for (libremidi::track_event& event : track)
-    {
-
-      if(!event.m.is_meta_event()){
-        if(event.m.get_message_type() == libremidi::message_type::NOTE_OFF || (event.m.get_message_type() == libremidi::message_type::NOTE_ON && (int)event.m.bytes[2] == 0)) {
-          int active_note_index = 0;
-          bool found = false;
-          for(auto & active_note : active_notes){
-            if ((int)active_note->m.bytes[1] == (int)event.m.bytes[1]) {
-              found = true;
-              break;
-            }
-            active_note_index++;
-          }
-          if(found){
-            all_notes.push_back(note{active_notes[active_note_index], &event});
-            active_notes.erase(active_notes.begin() + active_note_index);
-          }
-
-        }
-        else if(event.m.get_message_type() == libremidi::message_type::NOTE_ON && (int)event.m.bytes[2] > 0){
-          active_notes.push_back(&event);
-        }
-
-  
-
-      }
-      else{
-
-        if(event.tick%ticks_per_sixteenth < (ticks_per_sixteenth/2)){
-          event.tick = event.tick - event.tick%ticks_per_sixteenth;
-
-        }
-        else{
-          event.tick = event.tick + (ticks_per_sixteenth - event.tick%ticks_per_sixteenth);
-        }
-
-      }
-  
-    }
-  }
-
-
-  for (note& n : all_notes)
-  {
-
-    if(n.end->tick - n.start->tick <= ticks_per_sixteenth){
-
-      if(n.start->tick%ticks_per_sixteenth < (ticks_per_sixteenth/2)){
-        n.start->tick = n.start->tick - n.start->tick%ticks_per_sixteenth;
-        n.end->tick = n.start->tick + ticks_per_sixteenth;
-      }
-      else{
-        n.start->tick = n.start->tick + (ticks_per_sixteenth - n.start->tick%ticks_per_sixteenth);
-        n.end->tick = n.start->tick + ticks_per_sixteenth;
-      }
-    
-    }
-    else{
-      if(n.start->tick%ticks_per_sixteenth < (ticks_per_sixteenth/2)){
-        n.start->tick = n.start->tick - n.start->tick%ticks_per_sixteenth;
-      }
-      else{
-        n.start->tick = n.start->tick + (ticks_per_sixteenth - n.start->tick%ticks_per_sixteenth);
-      }
-
-      if(n.end->tick%ticks_per_sixteenth < (ticks_per_sixteenth/2)){
-        n.end->tick = n.end->tick - n.end->tick%ticks_per_sixteenth;
-      }
-      else{
-        n.end->tick = n.end->tick + (ticks_per_sixteenth - n.end->tick%ticks_per_sixteenth);
-      }
-
-    }
-  }
-    // std::cout << "\n\n";
-}
-
-
 
 void extract_notes(libremidi::reader& r, std::vector<std::vector<note>>& all_notes) {
 
@@ -539,6 +456,172 @@ void extract_sequence(std::vector<std::vector<note>> all_notes,std::vector<std::
 
 }
 
+
+void extract_sequence_singletrack(std::vector<std::vector<note>> all_notes, std::vector<std::vector<int>>& sequence, int ticks_per_sixteenth, int sequence_length, int block_start, int block_end, int transposition, int transposition_plus){
+  
+  std::vector<std::vector<libremidi::track_event*>> block_notes_events(all_notes.size(), std::vector<libremidi::track_event*>());  
+  for(int i = 0; i < all_notes.size(); i++){
+
+    for(int j = 0; j < all_notes[i].size(); j++){
+
+      std::cout << all_notes[i][j].start->tick << "-" << all_notes[i][j].end->tick << " ";
+      if(all_notes[i][j].start->tick >= block_start && all_notes[i][j].start->tick < block_end){
+
+        block_notes_events[i].push_back(all_notes[i][j].start);
+        block_notes_events[i].push_back(all_notes[i][j].end);
+      }
+    }
+
+    std::sort(block_notes_events[i].begin(), block_notes_events[i].end(), compare_tick_pointers);
+
+  }
+  std::cout << "sequence_length" << sequence_length << std::endl;
+
+  
+  for (int i = 0; i < block_notes_events.size(); i++) {
+
+    std::cout << "Okej: " << block_notes_events.size() << "x" << block_notes_events[i].size() << std::endl;
+    int note_playing = -1;
+    int track_event_index = 0;
+    int track_size = block_notes_events[i].size();
+    std::vector<active_note> active_notes;
+    std::cout << "\nTrack " << i << " ,size " << track_size << "\n\n";
+
+
+    for(int j = 0; j < sequence_length; j++) {
+
+      int start_tick = block_start + ticks_per_sixteenth*j;
+      int end_tick = block_start + ticks_per_sixteenth*(j+1);
+
+      // std::cout << "start-tick-" << start_tick << " end-tick-" << end_tick << std::endl;
+
+      while((track_event_index < track_size) && block_notes_events[i][track_event_index]->tick < end_tick){
+        
+        if(!block_notes_events[i][track_event_index]->m.is_meta_event()){
+          if(block_notes_events[i][track_event_index]->m.get_message_type() == libremidi::message_type::NOTE_OFF || 
+          (block_notes_events[i][track_event_index]->m.get_message_type() == libremidi::message_type::NOTE_ON && (int) block_notes_events[i][track_event_index]->m.bytes[2] == 0)) {
+            
+            int active_note_index = 0;
+            for(active_note& n : active_notes){
+              if (n.notenum == (int)block_notes_events[i][track_event_index]->m.bytes[1]) {
+                active_notes.erase(active_notes.begin() + active_note_index);
+                break;
+              }
+              active_note_index++;
+            }
+          }
+
+          else if(block_notes_events[i][track_event_index]->m.get_message_type() == libremidi::message_type::NOTE_ON){
+            active_notes.push_back(active_note{(int) block_notes_events[i][track_event_index]->m.bytes[1], block_notes_events[i][track_event_index]->tick});
+
+          }
+
+
+        }
+        track_event_index++;   
+      }  
+
+      // std::cout << "heh" << active_notes.size() << std::endl;
+      if(active_notes.size() > 0) {
+
+        bool found = false;
+        bool is_new = false;
+        for(active_note& n : active_notes){
+          if(n.notenum == note_playing) { 
+            if(n.start_tick >= start_tick){
+              is_new = true;
+            }
+            found = true;
+            break;
+          }
+        }
+        if(found && !is_new) {
+          sequence[i][j] = -2;
+        
+        }
+        else{
+
+          int highest_new = -1;
+          for(active_note& n : active_notes){
+            if(n.notenum > highest_new && n.start_tick >= start_tick) {
+              highest_new = n.notenum;
+            }
+          }
+
+          if(highest_new > -1){
+            sequence[i][j] = highest_new;
+            note_playing = highest_new;
+          }
+          else{
+            sequence[i][j] = -1;
+            note_playing =-1;
+          }
+
+        }
+      
+      }
+      else{
+        sequence[i][j] = -1;
+        note_playing =-1;
+
+      }
+      //  std::cout << "\n\n";   
+    }
+
+  }
+
+  for(int i = 0; i < block_notes_events.size(); i++){
+    for(int j = 0; j < sequence_length; j++){
+      int current_value = sequence[i][j];
+      if(current_value >= 0){
+
+        int block_note_val = current_value;
+        bool is_note_valid = false;
+
+        if(transposition_plus){
+          block_note_val += transposition;
+        }
+        else{
+          block_note_val -= transposition;
+        }
+
+        if(i == block_notes_events.size() - 1){
+          if(block_note_val >= 0 && block_note_val <= 15){
+            is_note_valid = true;
+          }
+        }
+        else{
+          if(block_note_val >= 0 && block_note_val <= 127){
+            is_note_valid = true;
+          }
+        }
+
+        if(is_note_valid){
+          sequence[i][j] = block_note_val;
+        }
+        else{
+          sequence[i][j] = -1;
+          int iter = j+1;
+          while(iter < sequence_length){
+            if(sequence[i][iter] == -2){
+              sequence[i][iter] = -1;
+            }
+            else{
+              break;
+            }
+            iter++;
+          }
+
+        }
+
+      }
+    }
+  }
+
+
+}
+
+
 int find_last_tick(libremidi::reader& r) {
   int last_note_event_tick = -1;
   for (const auto& track : r.tracks)
@@ -619,7 +702,6 @@ sequence_array extract_note_sequences_from_midi(char* midi_file_location, int tr
   int last_note_event_tick = find_last_tick(r);
 
   int ticks_per_sixteenth = r.ticksPerBeat/4;
-  int ticks_per_thirtysecond = r.ticksPerBeat/8;
   int tracks_num = r.tracks.size();
 
   int sequence_length = last_note_event_tick;
@@ -628,10 +710,6 @@ sequence_array extract_note_sequences_from_midi(char* midi_file_location, int tr
   int sequence_length_measures = sequence_length_sixteenths/16;
 
   sort_events(r);    
-
-
-  quantize_to_note_duration(r, ticks_per_thirtysecond);
-
   // print_out_sequence(r); 
 
   std::vector<int> program_nums(tracks_num, 0);
@@ -759,15 +837,125 @@ sequence_array extract_note_sequences_from_midi(char* midi_file_location, int tr
 }
 
 
+sequence_array_singletrack extract_note_sequences_from_midi_singletrack(char* midi_file_location, int transposition, bool transposition_plus){
+
+  std::ifstream file{midi_file_location, std::ios::binary};
+  if(!file.is_open())
+  {
+    std::cerr << "Could not open " << midi_file_location << std::endl;
+    return sequence_array_singletrack{};
+  }
+
+  std::vector<uint8_t> bytes;
+  bytes.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+
+  libremidi::reader r{true};
+
+  bool is_valid = parse_midi(bytes, r);
+
+  if(!is_valid){
+    return sequence_array_singletrack{};
+  }
+
+  // measure, track, event
+  // track, event
+
+  int last_note_event_tick = find_last_tick(r);
+
+  int ticks_per_sixteenth = r.ticksPerBeat/4;
+  int tracks_num = r.tracks.size();
+
+  int sequence_length = last_note_event_tick;
+  int sequence_length_sixteenths = sequence_length/ticks_per_sixteenth;
+  sequence_length_sixteenths += (16 - sequence_length_sixteenths % 16);
+  int sequence_length_measures = sequence_length_sixteenths/16;
+
+
+  sort_events(r);    
+  // print_out_sequence(r); 
+
+  std::vector<int> program_nums(tracks_num, 0);
+  get_program_numbers(r, program_nums);
+  // std::cout << "program nums: " << std::endl;
+  // for(int i = 0; i < program_nums.size(); i++){
+  //   std::cout << program_nums[i] << " ";
+  // }
+
+
+  // std::cout << std::endl;
+  
+  std::vector<std::vector<note>> all_notes(tracks_num, std::vector<note>());
+  extract_notes(r, all_notes);
+
+  // for(int i = 0; i < all_notes.size(); i++){
+  //   std::cout << all_notes[i].size() << "-> ";
+  //   for(int j = 0; j < all_notes[i].size(); j++){
+  //     std::cout << all_notes[i][j].start->tick << "-" << all_notes[i][j].end->tick << " ";
+  //   }
+  //   std::cout << std::endl;
+  // }
+
+  // std::cout << std::endl;
+
+  int current_ticks_per_beat = r.ticksPerBeat;
+  int quantized_ticks_per_beat = 4;
+  int quantized_ticks_per_sixteenth = quantized_ticks_per_beat/4;
+  quantize_notes(all_notes, current_ticks_per_beat, quantized_ticks_per_beat);
+
+  
+  std::vector< std::vector<std::vector<music_sequence_event>> > all_sequences;
+
+  // for(int i = 0; i < all_notes.size(); i++){
+  //   std::cout << "tracksize-" << all_notes[i].size() << "-> ";
+  //   for(int j = 0; j < all_notes[i].size(); j++){
+  //     std::cout << all_notes[i][j].start->tick << "-" << all_notes[i][j].end->tick << " ";
+  //   }
+  //   std::cout << std::endl;
+  // }
+
+  // std::cout  << std::endl;
+
+  int block_start = 0;
+  int block_end = sequence_length_measures*16*quantized_ticks_per_sixteenth;
+  std::vector<std::vector<int>> sequence(tracks_num, std::vector<int>(sequence_length_sixteenths, -1));
+
+  std::cout << "dosmok" << std::endl;
+
+  extract_sequence_singletrack(all_notes, sequence, quantized_ticks_per_sixteenth, sequence_length_sixteenths , block_start, block_end, transposition, transposition_plus);
+
+  //[tracks_num][sequence_length_sixteenths]
+  std::cout << "extracted sequence" << std::endl;
+  int** sequences_ = new int* [tracks_num];
+  for(int i = 0; i < tracks_num; i++){
+    sequences_[i] = new int[sequence_length_sixteenths];
+    for(int j = 0; j < sequence_length_sixteenths; j++){
+      sequences_[i][j] = sequence[i][j];
+      std::cout << sequences_[i][j] << " ";
+
+      if((j+1)%4 == 0){
+        std::cout << std::endl;
+      }
+
+      if((j+1)%16 == 0){
+        std::cout << std::endl;
+      }
+      
+    }
+    std::cout << std::endl << std::endl;
+  }
+
+  return sequence_array_singletrack{sequences_, tracks_num, sequence_length_sixteenths};
+}
 
 
 int main(int argc, char** argv)
 {
 
   char* midi_file_url = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid";
-  int transposition = 0;
+  int transposition = 51;
   bool transposition_sign = false;
-  extract_note_sequences_from_midi(midi_file_url, transposition, transposition_sign);  
+  // extract_note_sequences_from_midi(midi_file_url, transposition, transposition_sign); 
+  extract_note_sequences_from_midi_singletrack(midi_file_url, transposition, transposition_sign);  
 
 }
 
