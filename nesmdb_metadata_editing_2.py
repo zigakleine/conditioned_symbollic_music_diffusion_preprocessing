@@ -180,11 +180,11 @@ file_json.write(y)
 file_json.close()
 
 
-# file = open('./db_metadata/nesmdb/nesmdb_updated2808.pkl', 'wb')
-# pickle.dump(metadata, file)
-# file.close()
-#
-# y = json.dumps(metadata, indent=4)
-# file_json = open('db_metadata/nesmdb/nesmdb_meta_json2808.json', 'w')
-# file_json.write(y)
-# file_json.close()
+file = open('./db_metadata/nesmdb/nesmdb_updated2808.pkl', 'wb')
+pickle.dump(metadata, file)
+file.close()
+
+y = json.dumps(metadata, indent=4)
+file_json = open('db_metadata/nesmdb/nesmdb_meta_json2808.json', 'w')
+file_json.write(y)
+file_json.close()

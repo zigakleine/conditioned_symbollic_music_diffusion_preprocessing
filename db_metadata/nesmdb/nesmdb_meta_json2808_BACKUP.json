@@ -3458,8 +3458,7 @@
     },
     "284_RollingThunder": {
         "composers": [
-            "Junko Ozawa",
-            "Unknown"
+            "Junko Ozawa"
         ],
         "download_url": "http://vgmrips.net/files/NES/Rolling_Thunder_(NES).zip",
         "game_name_split": "rolling-thunder-nes",
@@ -5479,8 +5478,7 @@
     },
     "198_KungFu": {
         "composers": [
-            "Koji Kondo",
-            "Unknown"
+            "Koji Kondo"
         ],
         "download_url": "http://vgmrips.net/files/NES/Kung_Fu_(NES).zip",
         "game_name_split": "kung-fu-nes",
@@ -6052,8 +6050,7 @@
     },
     "379_WardnernoMori": {
         "composers": [
-            "Osamu Ohta",
-            "Unknown"
+            "Osamu Ohta"
         ],
         "download_url": "http://vgmrips.net/files/NES/Wardner_no_Mori_(FDS).zip",
         "game_name_split": "wardner-no-mori-fds",
@@ -8707,7 +8704,6 @@
         "composers": [
             "Hiroto Tomro",
             "Junko Ozawa",
-            "Unknown",
             "Yuriko Keino"
         ],
         "download_url": "http://vgmrips.net/files/NES/Pac-Mania_(NES).zip",
@@ -8853,8 +8849,7 @@
         "composers": [
             "Brian Johnston",
             "Jonathan Dunn",
-            "Tim Wright",
-            "Various"
+            "Tim Wright"
         ],
         "download_url": "http://vgmrips.net/files/NES/Lemmings_(NES).zip",
         "game_name_split": "lemmings-nes",
@@ -9468,8 +9463,7 @@
     },
     "097_ExedExes": {
         "composers": [
-            "Tamayo Kawamoto",
-            "Unknown"
+            "Tamayo Kawamoto"
         ],
         "download_url": "http://vgmrips.net/files/NES/Exed_Exes_(NES).zip",
         "game_name_split": "exed-exes-nes",
@@ -9824,8 +9818,7 @@
     },
     "030_BinaryLand": {
         "composers": [
-            "Unknown",
-            "Various"
+            "Unknown"
         ],
         "download_url": "http://vgmrips.net/files/NES/Binary_Land_(NES).zip",
         "game_name_split": "binary-land-nes",
@@ -10082,7 +10075,6 @@
     },
     "279_RoadFighter": {
         "composers": [
-            "Unknown",
             "Yoshinori Sasaki"
         ],
         "download_url": "http://vgmrips.net/files/NES/Road_Fighter_(NES).zip",
@@ -15971,8 +15963,7 @@
     "288_SaintSeiya_OugonDensetsu": {
         "composers": [
             "Hiroaki Matsuzawa",
-            "Nobuo Yamada",
-            "Unknown"
+            "Nobuo Yamada"
         ],
         "download_url": "http://vgmrips.net/files/NES/Saint_Seiya_-_Ougon_Densetsu_(Family_Computer).zip",
         "game_name_split": "saint-seiya-ougon-densetsu-family-computer",
@@ -16727,7 +16718,6 @@
     },
     "070_DigDugII": {
         "composers": [
-            "Unknown",
             "Yuriko Keino"
         ],
         "download_url": "http://vgmrips.net/files/NES/Dig_Dug_II_(NES).zip",
@@ -19203,8 +19193,7 @@
     "267_Pooyan": {
         "composers": [
             "Antonn Dvok",
-            "Toshiyuki Sasagawa",
-            "Unknown"
+            "Toshiyuki Sasagawa"
         ],
         "download_url": "http://vgmrips.net/files/NES/Pooyan_(Family_Computer).zip",
         "game_name_split": "pooyan-family-computer",
@@ -20857,7 +20846,6 @@
     "161_HiryunoKenII_DragonnoTsubasa": {
         "composers": [
             "Shunichi Mikame",
-            "Unknown",
             "Yuki Kume"
         ],
         "download_url": "http://vgmrips.net/files/NES/Hiryu_no_Ken_II_-_Dragon_no_Tsubasa_(Family_Computer).zip",
@@ -21818,7 +21806,6 @@
             "Akito Nakatsuka",
             "Kenji Yamamoto",
             "Koji Kondo",
-            "Various",
             "Yukio Kaneoka"
         ],
         "download_url": "http://vgmrips.net/files/NES/Mike_Tyson's_Punch-Out!!_(NES).zip",
@@ -22106,8 +22093,7 @@
     "318_SuperDonkeyKong": {
         "composers": [
             "David Wise",
-            "Eveline Fischer",
-            "Unknown"
+            "Eveline Fischer"
         ],
         "download_url": "http://vgmrips.net/files/NES/Super_Donkey_Kong_(Dendy).zip",
         "game_name_split": "super-donkey-kong-dendy",
@@ -25510,8 +25496,7 @@
     },
     "163_HittheIce": {
         "composers": [
-            "Hiroshige Tonomura",
-            "Unknown"
+            "Hiroshige Tonomura"
         ],
         "download_url": "http://vgmrips.net/files/NES/Hit_the_Ice_(NES).zip",
         "game_name_split": "hit-the-ice-nes",
@@ -26323,8 +26308,7 @@
     },
     "355_Tiger_Heli": {
         "composers": [
-            "Tatsuya Uemura",
-            "Unknown"
+            "Tatsuya Uemura"
         ],
         "download_url": "http://vgmrips.net/files/NES/Tiger-Heli_(NES).zip",
         "game_name_split": "tiger-heli-nes",
@@ -28529,8 +28513,7 @@
     },
     "247_Ms_Pac_Man": {
         "composers": [
-            "Naoki Higashio",
-            "Unknown"
+            "Naoki Higashio"
         ],
         "download_url": "http://vgmrips.net/files/NES/Ms._Pac-Man_(NES).zip",
         "game_name_split": "ms-pac-man-nes",
@@ -28606,7 +28589,6 @@
     },
     "293_Shinobi": {
         "composers": [
-            "Unknown",
             "Yasuhiro Kawakami"
         ],
         "download_url": "http://vgmrips.net/files/NES/Shinobi_(NES).zip",
@@ -34154,7 +34136,6 @@
     "162_HiryunoKenSpecial_FightingWars": {
         "composers": [
             "Shunichi Mikame",
-            "Unknown",
             "Yuki Kume"
         ],
         "download_url": "http://vgmrips.net/files/NES/Hiryu_no_Ken_Special_-_Fighting_Wars_(Family_Computer).zip",
@@ -37645,8 +37626,7 @@
     },
     "308_StarForce": {
         "composers": [
-            "Tsukasa Masuko",
-            "Unknown"
+            "Tsukasa Masuko"
         ],
         "download_url": "http://vgmrips.net/files/NES/Star_Force_(NES)_JP.zip",
         "game_name_split": "star-force-nes-jp",
@@ -37748,8 +37728,7 @@
     },
     "014_Argus": {
         "composers": [
-            "Shinichi Sakamoto",
-            "Unknown"
+            "Shinichi Sakamoto"
         ],
         "download_url": "http://vgmrips.net/files/NES/Argus_(Family_Computer).zip",
         "game_name_split": "argus-family-computer",
@@ -39949,8 +39928,7 @@
     "303_SpaceHarrier": {
         "composers": [
             "Hiroshi Kawaguchi",
-            "Tokuhiko Uwabo",
-            "Unknown"
+            "Tokuhiko Uwabo"
         ],
         "download_url": "http://vgmrips.net/files/NES/Space_Harrier_(NES).zip",
         "game_name_split": "space-harrier-nes",
@@ -41997,8 +41975,7 @@
     "289_SaintSeiya_OugonDensetsuKanketsuHen": {
         "composers": [
             "Hiroaki Matsuzawa",
-            "Nobuo Yamada",
-            "Unknown"
+            "Nobuo Yamada"
         ],
         "download_url": "http://vgmrips.net/files/NES/Saint_Seiya_-_Ougon_Densetsu_Kanketsu_Hen_(Family_Computer).zip",
         "game_name_split": "saint-seiya-ougon-densetsu-kanketsu-hen-family-computer",
@@ -42178,8 +42155,7 @@
     },
     "187_KidNiki_RadicalNinja": {
         "composers": [
-            "Kouji Murata",
-            "Unknown"
+            "Kouji Murata"
         ],
         "download_url": "http://vgmrips.net/files/NES/Kid_Niki_-_Radical_Ninja_(NES).zip",
         "game_name_split": "kid-niki-radical-ninja-nes",
@@ -43463,8 +43439,7 @@
     "054_ChukaTaisen": {
         "composers": [
             "Planet2",
-            "Soul Duke",
-            "Unknown"
+            "Soul Duke"
         ],
         "download_url": "http://vgmrips.net/files/NES/Chuka_Taisen_(Family_Computer).zip",
         "game_name_split": "chuka-taisen-family-computer",
@@ -45169,8 +45144,7 @@
     },
     "290_Seicross": {
         "composers": [
-            "Kenji Yoshida",
-            "Unknown"
+            "Kenji Yoshida"
         ],
         "download_url": "http://vgmrips.net/files/NES/Seicross_(NES).zip",
         "game_name_split": "seicross-nes",
@@ -47840,8 +47814,7 @@
             "Earl Vickers",
             "Gavan Anderson",
             "Hal Canon",
-            "Tania Smith",
-            "Various"
+            "Tania Smith"
         ],
         "download_url": "http://vgmrips.net/files/NES/Road_Runner_(NES).zip",
         "game_name_split": "road-runner-nes",
@@ -49264,8 +49237,7 @@
     },
     "234_Metro_Cross": {
         "composers": [
-            "Nobuyuki Ohnogi",
-            "Unknown"
+            "Nobuyuki Ohnogi"
         ],
         "download_url": "http://vgmrips.net/files/NES/Metro-Cross_(NES).zip",
         "game_name_split": "metro-cross-nes",
@@ -49623,8 +49595,7 @@
     },
     "152_Gyrodine": {
         "composers": [
-            "Masamichi Yamazaki",
-            "Unknown"
+            "Masamichi Yamazaki"
         ],
         "download_url": "http://vgmrips.net/files/NES/Gyrodine_(NES).zip",
         "game_name_split": "gyrodine-nes",
@@ -51834,7 +51805,6 @@
             "Sachio Ogawa",
             "Tatsuyuki Maeda",
             "Tomonori Sawada",
-            "Unknown",
             "Yuzo Koshiro"
         ],
         "download_url": "http://vgmrips.net/files/NES/Somari_(Dendy).zip",
@@ -52488,7 +52458,6 @@
     },
     "048_Chack_nPop": {
         "composers": [
-            "Unknown",
             "Yoshio Imamura"
         ],
         "download_url": "http://vgmrips.net/files/NES/Chack'n_Pop_(NES).zip",
@@ -53177,8 +53146,7 @@
     },
     "256_OperationWolf": {
         "composers": [
-            "Hiroshi Tuda",
-            "Unknown"
+            "Hiroshi Tuda"
         ],
         "download_url": "http://vgmrips.net/files/NES/Operation_Wolf_(NES).zip",
         "game_name_split": "operation-wolf-nes",
@@ -53279,7 +53247,6 @@
     },
     "262_Penguin_KunWars": {
         "composers": [
-            "Unknown",
             "K. Fujii"
         ],
         "download_url": "http://vgmrips.net/files/NES/Penguin-Kun_Wars_(Family_Computer).zip",
@@ -53470,8 +53437,7 @@
     },
     "173_Ikki": {
         "composers": [
-            "Hiroaki koi",
-            "Unknown"
+            "Hiroaki koi"
         ],
         "download_url": "http://vgmrips.net/files/NES/Ikki_(NES).zip",
         "game_name_split": "ikki-nes",
@@ -53673,9 +53639,7 @@
     },
     "142_Ghosts_nGoblins": {
         "composers": [
-            "Ayako Mori",
-            "Hal",
-            "Wood"
+            "Ayako Mori"
         ],
         "download_url": "http://vgmrips.net/files/NES/Ghosts_'n_Goblins_(NES).zip",
         "game_name_split": "ghosts-n-goblins-nes",
@@ -57056,8 +57020,7 @@
     },
     "007_AfterBurner": {
         "composers": [
-            "Hiroshi Kawaguchi",
-            "Unknown"
+            "Hiroshi Kawaguchi"
         ],
         "download_url": "http://vgmrips.net/files/NES/After_Burner_(NES).zip",
         "game_name_split": "after-burner-nes",
@@ -57377,7 +57340,6 @@
     },
     "328_SuperXevious_GAMPnoNazo": {
         "composers": [
-            "Unknown",
             "Yuriko Keino"
         ],
         "download_url": "http://vgmrips.net/files/NES/Super_Xevious_-_GAMP_no_Nazo_(Family_Computer).zip",
@@ -58243,7 +58205,6 @@
     "127_FlyingWarriors": {
         "composers": [
             "Shunichi Mikame",
-            "Unknown",
             "Yuki Kume"
         ],
         "download_url": "http://vgmrips.net/files/NES/Flying_Warriors_(NES).zip",
@@ -59060,8 +59021,7 @@
             "Cameo Matano",
             "Dokuo Umeno",
             "Hiroshi Takeyasu",
-            "Tomoya Tomita",
-            "Various"
+            "Tomoya Tomita"
         ],
         "download_url": "http://vgmrips.net/files/NES/Parodius_(NES).zip",
         "game_name_split": "parodius-nes",
@@ -61431,8 +61391,7 @@
     },
     "272_Quarth": {
         "composers": [
-            "Norio Hanzawa",
-            "Unknown"
+            "Norio Hanzawa"
         ],
         "download_url": "http://vgmrips.net/files/NES/Quarth_(Family_Computer).zip",
         "game_name_split": "quarth-family-computer",
@@ -69635,8 +69594,7 @@
     },
     "125_FlyingDragon_TheSecretScroll": {
         "composers": [
-            "Shunichi Mikame",
-            "Unknown"
+            "Shunichi Mikame"
         ],
         "download_url": "http://vgmrips.net/files/NES/Flying_Dragon_-_The_Secret_Scroll_(NES).zip",
         "game_name_split": "flying-dragon-the-secret-scroll-nes",
@@ -70060,8 +70018,7 @@
     "119_FinalFantasyIII": {
         "composers": [
             "Ludwig van Beethoven",
-            "Nobuo Uematsu",
-            "Unknown"
+            "Nobuo Uematsu"
         ],
         "download_url": "http://vgmrips.net/files/NES/Final_Fantasy_III_(Family_Computer).zip",
         "game_name_split": "final-fantasy-iii-family-computer",
@@ -72271,7 +72228,6 @@
     "160_HiryunoKenIII_5NinnoRyuSenshi": {
         "composers": [
             "Shunichi Mikame",
-            "Unknown",
             "Yuki Kume"
         ],
         "download_url": "http://vgmrips.net/files/NES/Hiryu_no_Ken_III_-_5_Nin_no_Ryu_Senshi_(Family_Computer).zip",
@@ -72709,7 +72665,7 @@
     "351_ThePandaPrince": {
         "composers": [
             "Eveline Fischer",
-            "Dave Wise",
+            "David Wise",
             "Robin Beanland",
             "arr. Yho Yng"
         ],
@@ -73267,7 +73223,6 @@
     },
     "094_ElevatorAction": {
         "composers": [
-            "Unknown",
             "Yoshio Imamura"
         ],
         "download_url": "http://vgmrips.net/files/NES/Elevator_Action_(NES).zip",
@@ -74638,8 +74593,7 @@
             "Masahiko Takaki",
             "Naoto Yagishita",
             "Shizuo Aizawa",
-            "Shotaro",
-            "Various"
+            "Shotaro"
         ],
         "download_url": "http://vgmrips.net/files/NES/Rainbow_Islands_-_The__Story_of_Bubble_Bobble_2_(NES).zip",
         "game_name_split": "rainbow-islands-the-story-of-bubble-bobble-2-nes",
@@ -75210,8 +75164,7 @@
     },
     "016_ArkanoidII": {
         "composers": [
-            "Hisayoshi Ogura",
-            "Unknown"
+            "Hisayoshi Ogura"
         ],
         "download_url": "http://vgmrips.net/files/NES/Arkanoid_II_(NES).zip",
         "game_name_split": "arkanoid-ii-nes",
