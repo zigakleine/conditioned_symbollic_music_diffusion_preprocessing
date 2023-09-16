@@ -45,11 +45,8 @@ for filename in os.listdir(nesmdb_flat_abs_path):
         count += 1
 
 
-z_stacked = np.vstack(z_list)
-print("stacked")
-
 file = open("./nesmdb_single_stacked.pkl", 'wb')
-pickle.dump(z_stacked, file)
+pickle.dump(z_list, file)
 file.close()
 
 
