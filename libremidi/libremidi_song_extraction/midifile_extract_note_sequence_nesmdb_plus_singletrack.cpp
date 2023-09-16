@@ -464,7 +464,7 @@ void extract_sequence_singletrack(std::vector<std::vector<note>> all_notes, std:
 
     for(int j = 0; j < all_notes[i].size(); j++){
 
-      std::cout << all_notes[i][j].start->tick << "-" << all_notes[i][j].end->tick << " ";
+      // std::cout << all_notes[i][j].start->tick << "-" << all_notes[i][j].end->tick << " ";
       if(all_notes[i][j].start->tick >= block_start && all_notes[i][j].start->tick < block_end){
 
         block_notes_events[i].push_back(all_notes[i][j].start);
@@ -475,17 +475,17 @@ void extract_sequence_singletrack(std::vector<std::vector<note>> all_notes, std:
     std::sort(block_notes_events[i].begin(), block_notes_events[i].end(), compare_tick_pointers);
 
   }
-  std::cout << "sequence_length" << sequence_length << std::endl;
+  // std::cout << "sequence_length" << sequence_length << std::endl;
 
   
   for (int i = 0; i < block_notes_events.size(); i++) {
 
-    std::cout << "Okej: " << block_notes_events.size() << "x" << block_notes_events[i].size() << std::endl;
+    // std::cout << "Okej: " << block_notes_events.size() << "x" << block_notes_events[i].size() << std::endl;
     int note_playing = -1;
     int track_event_index = 0;
     int track_size = block_notes_events[i].size();
     std::vector<active_note> active_notes;
-    std::cout << "\nTrack " << i << " ,size " << track_size << "\n\n";
+    // std::cout << "\nTrack " << i << " ,size " << track_size << "\n\n";
 
 
     for(int j = 0; j < sequence_length; j++) {
@@ -919,29 +919,29 @@ sequence_array_singletrack extract_note_sequences_from_midi_singletrack(char* mi
   int block_end = sequence_length_measures*16*quantized_ticks_per_sixteenth;
   std::vector<std::vector<int>> sequence(tracks_num, std::vector<int>(sequence_length_sixteenths, -1));
 
-  std::cout << "dosmok" << std::endl;
+  // std::cout << "dosmok" << std::endl;
 
   extract_sequence_singletrack(all_notes, sequence, quantized_ticks_per_sixteenth, sequence_length_sixteenths , block_start, block_end, transposition, transposition_plus);
 
   //[tracks_num][sequence_length_sixteenths]
-  std::cout << "extracted sequence" << std::endl;
+  // std::cout << "extracted sequence" << std::endl;
   int** sequences_ = new int* [tracks_num];
   for(int i = 0; i < tracks_num; i++){
     sequences_[i] = new int[sequence_length_sixteenths];
     for(int j = 0; j < sequence_length_sixteenths; j++){
       sequences_[i][j] = sequence[i][j];
-      std::cout << sequences_[i][j] << " ";
+      // std::cout << sequences_[i][j] << " ";
 
-      if((j+1)%4 == 0){
-        std::cout << std::endl;
-      }
+      // if((j+1)%4 == 0){
+      //   std::cout << std::endl;
+      // }
 
-      if((j+1)%16 == 0){
-        std::cout << std::endl;
-      }
+      // if((j+1)%16 == 0){
+      //   std::cout << std::endl;
+      // }
       
     }
-    std::cout << std::endl << std::endl;
+    // std::cout << std::endl << std::endl;
   }
 
   return sequence_array_singletrack{sequences_, tracks_num, sequence_length_sixteenths};

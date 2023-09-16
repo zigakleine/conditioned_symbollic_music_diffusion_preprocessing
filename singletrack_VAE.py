@@ -109,9 +109,9 @@ class db_processing:
                 if prev_element == 0 and current_element == 1:
                     sequences_[i][j] = 0
 
-                print(str(sequences_[i][j]), end=" ")
-            print("")
-            print("\n")
+            #     print(str(sequences_[i][j]), end=" ")
+            # print("")
+            # print("\n")
 
         sequences_ = sequences_[1:, :]
         return sequences_
