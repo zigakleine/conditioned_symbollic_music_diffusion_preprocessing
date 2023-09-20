@@ -21,19 +21,19 @@ def save_metadata(metadata):
     file_json.close()
 
 
-def lakh_encode(vae, db_proc, fb256_mask):
+def lakh_encode(vae, db_proc, dir_to_save, fb256_mask):
 
     output_folder = "lakh_encoded"
 
-    all_encodings_dir = os.path.join(current_dir, output_folder)
+    all_encodings_dir = os.path.join(dir_to_save, output_folder)
 
-    if not os.path.exists(all_encodings_dir):
-        os.mkdir(all_encodings_dir)
+    # if not os.path.exists(all_encodings_dir):
+    #     os.mkdir(all_encodings_dir)
 
-    sub_folder_encodings_dir = os.path.join(current_dir, output_folder, subdirectory)
+    sub_folder_encodings_dir = os.path.join(dir_to_save, output_folder, subdirectory)
 
-    if not os.path.exists(sub_folder_encodings_dir):
-        os.mkdir(sub_folder_encodings_dir)
+    # if not os.path.exists(sub_folder_encodings_dir):
+    #     os.mkdir(sub_folder_encodings_dir)
 
     metadata = pickle.load(open(metadata_full_path_pkl, "rb"))
     count = 0
@@ -46,7 +46,7 @@ def lakh_encode(vae, db_proc, fb256_mask):
 
         encoded_song_filename = song + "_enc.pkl"
         encoded_song_rel_path = os.path.join(output_folder, subdirectory, encoded_song_filename)
-        encoded_song_abs_path = os.path.join(current_dir, encoded_song_rel_path)
+        encoded_song_abs_path = os.path.join(dir_to_save, encoded_song_rel_path)
 
         # if not is_encodable:
         #     count += 1
@@ -117,10 +117,11 @@ def lakh_encode(vae, db_proc, fb256_mask):
 
 
 current_dir = os.getcwd()
+dir_to_save = "/storage/local/ssd/zigakleine-workspace"
 model_rel_path = "cat-mel_2bar_big.tar"
 nesmdb_shared_library_rel_path = "ext_nseq_lakh_single_lib.so"
 
-batch_size = 32
+batch_size = 64
 
 model_path = os.path.join(current_dir, model_rel_path)
 
@@ -156,5 +157,5 @@ for i in range(16):
     metadata_full_path_pkl = os.path.join(current_dir, db_metadata_pkl_rel_path)
     metadata_full_path_json = os.path.join(current_dir, db_metadata_json_rel_path)
 
-    metadata = lakh_encode(vae, db_proc, None)
+    metadata = lakh_encode(vae, db_proc, dir_to_save, None)
     save_metadata(metadata)

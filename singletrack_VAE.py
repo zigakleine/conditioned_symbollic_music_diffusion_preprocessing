@@ -321,6 +321,29 @@ class singletrack_vae:
 
         return song_data
 
+    def decode_sequence_full_results(self, z, total_steps, temperature):
+
+        # dec = self.model.decode(z, total_steps, temperature)
+        full_results = self.model.decode_to_tensors(z, total_steps, temperature, None, True)
+
+        logits = full_results[1]
+        song_tensors = full_results[2]
+        tracks_num = 4
+        num_double_measures = len(song_tensors)//tracks_num
+        num_measures = num_double_measures * 2
+        num_timesteps = num_measures * 16
+
+        song_data = np.zeros((tracks_num, num_timesteps), dtype=np.int32)
+        # song_data.fill(-1)
+
+        for i in range(tracks_num):
+            for j in range(num_timesteps):
+                    token = np.argmax(song_tensors[num_double_measures * i + (j // total_steps)][j % total_steps])
+                    song_data[i, j] = token
+
+
+        return song_data, song_tensors, logits
+
 # input_midi_path = "./twinkle.mid"
 # input_midi = os.path.expanduser(input_midi_path)
 # input = note_seq.midi_file_to_note_sequence(input_midi)
