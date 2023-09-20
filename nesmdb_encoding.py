@@ -171,7 +171,7 @@ check_gpus()
 model_rel_path = "cat-mel_2bar_big.tar"
 nesmdb_shared_library_rel_path = "ext_nseq_nesmdb_single_lib.so"
 
-batch_size = 32
+batch_size = 64
 
 model_path = os.path.join(current_dir, model_rel_path)
 nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel_path)
