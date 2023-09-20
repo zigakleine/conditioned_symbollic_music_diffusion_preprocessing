@@ -956,7 +956,7 @@ sequence_array_singletrack extract_note_sequences_from_midi_singletrack(char* mi
 
     int block_measures = used_midi_block.length_measures;
     
-    std::cout << "measures: " << block_measures << " TIME_SIGNATURE: " << used_midi_block.time_signature_1 << "/" << used_midi_block.time_signature_2 << " TEMPO: " << used_midi_block.tempo << "nes-configs-num-" << all_posible_nes_tracks.size() << std::endl;
+    // std::cout << "measures: " << block_measures << " TIME_SIGNATURE: " << used_midi_block.time_signature_1 << "/" << used_midi_block.time_signature_2 << " TEMPO: " << used_midi_block.tempo << "nes-configs-num-" << all_posible_nes_tracks.size() << std::endl;
 
     int block_start;
     int block_end;
@@ -974,10 +974,10 @@ sequence_array_singletrack extract_note_sequences_from_midi_singletrack(char* mi
             }
         }
 
-        for(int j = 0; j < nes_tracks_num; j++){
-           std::cout << midi_programs[j] << " ";
-        }
-        std::cout << std::endl;
+        // for(int j = 0; j < nes_tracks_num; j++){
+        //    std::cout << midi_programs[j] << " ";
+        // }
+        // std::cout << std::endl;
 
         block_start = used_midi_block.tick_start;
         block_end =  used_midi_block.tick_end;
@@ -1012,34 +1012,34 @@ sequence_array_singletrack extract_note_sequences_from_midi_singletrack(char* mi
 
   // std::cout << std::endl << std::endl << std::endl;
   int blocks_num = all_blocks_sequences.size();
-  std::cout << "blocks-num-" << blocks_num << std::endl;
+  // std::cout << "blocks-num-" << blocks_num << std::endl;
   // [blocks_num][sequence_length_measures][nes_tracks_num][max_events]
   int*** sequences_ = new int** [blocks_num];
 
   for(int i = 0; i < blocks_num; i++){
     sequences_[i] = new int* [nes_tracks_num];
-    std::cout << "block-" << i << std::endl; 
+    // std::cout << "block-" << i << std::endl; 
     for(int j = 0; j < nes_tracks_num; j++){
-      std::cout << "block-" << i << "track-" << j << std::endl; 
+      // std::cout << "block-" << i << "track-" << j << std::endl; 
       sequences_[i][j] = new int [sequence_length_sixteenths];
       for(int k = 0; k < sequence_length_sixteenths; k++){
 
         sequences_[i][j][k] = all_blocks_sequences[i][j][k];
-        std::cout << sequences_[i][j][k] << " ";
+        // std::cout << sequences_[i][j][k] << " ";
 
-        if((k+1)%4 == 0){
-            std::cout << std::endl;
-        }
+        // if((k+1)%4 == 0){
+        //     std::cout << std::endl;
+        // }
 
-        if((k+1)%16 == 0){
-            std::cout << std::endl;
-        }
+        // if((k+1)%16 == 0){
+        //     std::cout << std::endl;
+        // }
       }
-      std::cout << std::endl << std::endl;
+      // std::cout << std::endl << std::endl;
     } 
 
-    std::cout << std::endl << std::endl; 
-    std::cout << std::endl << std::endl;
+    // std::cout << std::endl << std::endl; 
+    // std::cout << std::endl << std::endl;
   }
 
   // std::cout << std::endl << std::endl;

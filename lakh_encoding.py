@@ -27,13 +27,13 @@ def lakh_encode(vae, db_proc, dir_to_save, fb256_mask):
 
     all_encodings_dir = os.path.join(dir_to_save, output_folder)
 
-    # if not os.path.exists(all_encodings_dir):
-    #     os.mkdir(all_encodings_dir)
+    if not os.path.exists(all_encodings_dir):
+        os.mkdir(all_encodings_dir)
 
     sub_folder_encodings_dir = os.path.join(dir_to_save, output_folder, subdirectory)
 
-    # if not os.path.exists(sub_folder_encodings_dir):
-    #     os.mkdir(sub_folder_encodings_dir)
+    if not os.path.exists(sub_folder_encodings_dir):
+        os.mkdir(sub_folder_encodings_dir)
 
     metadata = pickle.load(open(metadata_full_path_pkl, "rb"))
     count = 0
