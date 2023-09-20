@@ -34,11 +34,11 @@ def save_metadata(metadata):
     file_json.close()
 
 
-def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, fb256_mask):
+def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, dir_to_save, fb256_mask):
 
 
     output_folder = "nesmdb_encoded"
-    all_encodings_dir = os.path.join(current_dir, output_folder)
+    all_encodings_dir = os.path.join(dir_to_save, output_folder)
 
     if not os.path.exists(all_encodings_dir):
         os.mkdir(all_encodings_dir)
@@ -53,7 +53,8 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
     for game in metadata.keys():
 
         # create a directory for current_songs encoded tensors
-        current_game_dir = os.path.join(current_dir, output_folder, game)
+
+        current_game_dir = os.path.join(dir_to_save, output_folder, game)
         if not os.path.exists(current_game_dir):
             os.mkdir(current_game_dir)
 
@@ -76,7 +77,7 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
             encoded_song_file_name = str(song["number"] - 1) + "*" + transposition_sign + str(
                 transposition) + "*" + instruments_str + ".pkl"
             encoded_song_rel_path = os.path.join(output_folder, game, encoded_song_file_name)
-            encoded_song_abs_path = os.path.join(current_dir, encoded_song_rel_path)
+            encoded_song_abs_path = os.path.join(dir_to_save, encoded_song_rel_path)
 
             time_start = time.time()
             # preveri če željena transpozicija/ kombinacija trackov že obstaja, če ja skipaš,
@@ -102,7 +103,6 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
 
                 song_data_extended = []
 
-                # todo-fix
                 if song_measures < song_min_measures:
                     if is_looping:
                         for i in range(song_min_measures*16):
@@ -162,8 +162,7 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
     return metadata
 
 
-
-
+dir_to_save = "/storage/local/ssd/zigakleine-workspace"
 desired_instruments_permutations = [["p1", "p2", "tr", "no"], ["p2", "p1", "tr", "no"]]
 transpositions = ((False, 5), (False, 4), (False, 3), (False, 2), (False, 1), (True, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5), (True, 6))
 
@@ -192,5 +191,5 @@ vae = singletrack_vae(model_path, batch_size)
 for desired_instruments in desired_instruments_permutations:
     for transposition_plus, transposition in transpositions:
 
-        metadata = nesmdb_encode(transposition, transposition_plus, desired_instruments, vae, db_proc, None)
+        metadata = nesmdb_encode(transposition, transposition_plus, desired_instruments, vae, db_proc, dir_to_save, None)
         save_metadata(metadata)
