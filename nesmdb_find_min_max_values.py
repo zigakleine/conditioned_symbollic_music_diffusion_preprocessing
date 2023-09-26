@@ -12,6 +12,7 @@ metadata_folder = "db_metadata"
 database_folder = "nesmdb"
 
 current_dir = os.getcwd()
+encoded_dir = "/storage/local/ssd/zigakleine-workspace/"
 
 
 metadata_filename = "nesmdb_updated2808.pkl"
@@ -20,10 +21,6 @@ nesmdb_metadata_abs_path = os.path.join(current_dir, metadata_folder, database_f
 
 metadata = pickle.load(open(nesmdb_metadata_abs_path, "rb"))
 
-
-
-# print(all_lakh_metadata)
-current_dir = os.getcwd()
 
 global_min = float('inf')
 global_max = float('-inf')
@@ -40,7 +37,12 @@ for game in metadata:
             encodable_songs += 1
             song_rel_urls = song["encoded_song_urls"]
             for song_rel_url in song_rel_urls:
-                song_abs_url = os.path.join(current_dir, song_rel_url)
+                song_abs_url = os.path.join(encoded_dir, song_rel_url)
+
+                # if not os.path.exists(song_abs_url):
+                #     print("notafile!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                #     continue
+
                 song_encoded = pickle.load(open(song_abs_url, "rb"))
                 sequences += song_encoded.shape[0]
                 song["num_sequences"] = song_encoded.shape[0]
@@ -58,7 +60,6 @@ for game in metadata:
 
 
 
-
 print("global_max", global_max)
 print("global_min", global_min)
 
@@ -71,16 +72,14 @@ file = open('./nesmdb_min_max.pkl', 'wb')
 pickle.dump(min_max, file)
 file.close()
 
-nesmdb_metadata_abs_path = os.path.join(current_dir, metadata_folder, database_folder,
-                                                  metadata_filename)
-file2 = open("./db_metadata/nesmdb/nesmdb_updated2808.pkl", 'wb')
+nesmdb_metadata_abs_path = os.path.join(current_dir, metadata_folder, database_folder, metadata_filename)
+file2 = open(nesmdb_metadata_abs_path, 'wb')
 pickle.dump(metadata, file2)
 file2.close()
 
 json_filename = "nesmdb_meta_json2808.json"
-nesmdb_json_abs_path = os.path.join(current_dir, metadata_folder, database_folder,
-                                                  metadata_filename)
+nesmdb_json_abs_path = os.path.join(current_dir, metadata_folder, database_folder, json_filename)
 y = json.dumps(metadata, indent=4)
-file_json = open("./db_metadata/nesmdb/nesmdb_meta_json2808.json", 'w')
+file_json = open(nesmdb_json_abs_path, 'w')
 file_json.write(y)
 file_json.close()
