@@ -36,6 +36,7 @@ for game in metadata:
         if song["is_encodable"]:
             encodable_songs += 1
             song_rel_urls = song["encoded_song_urls"]
+            print()
             for song_rel_url in song_rel_urls:
                 song_abs_url = os.path.join(encoded_dir, song_rel_url)
 

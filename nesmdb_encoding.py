@@ -107,15 +107,18 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
                     if is_looping:
                         for i in range(song_min_measures*16):
                             song_data_extended.append(song_data[:, i % song_measures*16])
+                        song_data_extended = np.vstack(song_data_extended).T
                 else:
                     if is_looping:
                         new_length_measures = ((song_measures//song_min_measures + 1)*song_min_measures)
                         for i in range(new_length_measures*16):
                             song_data_extended.append(song_data[:, i % song_measures*16])
+                        song_data_extended = np.vstack(song_data_extended).T
                     else:
-                        song_data_extended = song_data
+                        new_length_measures = ((song_measures // song_min_measures) * song_min_measures)
+                        song_data_extended = song_data[:, :new_length_measures*16]
 
-                song_data_extended = np.vstack(song_data_extended).T
+
                 z = vae.encode_sequence(song_data_extended)
 
                 batch_size = (song_min_measures//2)*4

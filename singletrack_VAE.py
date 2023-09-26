@@ -2,15 +2,15 @@
 import numpy as np
 import os
 import tensorflow.compat.v1 as tf
-import time
-from scipy.io import wavfile
+# import time
+# from scipy.io import wavfile
 
 from magenta.models.music_vae import configs
 from magenta.models.music_vae.trained_model import TrainedModel
-import note_seq
+# import note_seq
 
-from note_seq import midi_io, synthesize, play_sequence
-from note_seq.sequences_lib import concatenate_sequences
+# from note_seq import midi_io, synthesize, play_sequence
+# from note_seq.sequences_lib import concatenate_sequences
 
 tf.disable_v2_behavior()
 print('Done!')
@@ -358,7 +358,7 @@ class singletrack_vae:
 # print(results)
 if __name__ == "__main__":
 
-    mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid"
+    mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/282_RoboWarrior_12_13EndingStaffRoll.mid"
 
     batch_size = 32
     temperature = 0.5
