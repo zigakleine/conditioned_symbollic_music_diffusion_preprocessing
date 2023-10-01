@@ -91,11 +91,12 @@ def lakh_encode(vae, db_proc, dir_to_save, fb256_mask):
             file = open(encoded_song_abs_path, 'wb')
             pickle.dump(z_reshaped, file)
             file.close()
-            succesful_songs +=1
+            succesful_songs += 1
             successful_sequences += song_data_sequences
 
             metadata[song]["encodable"] = True
             metadata[song]["encoded_song_path"] = encoded_song_rel_path
+            metadata[song]["num_sequences"] = song_data_sequences
             save_metadata(metadata)
 
         time_diff = time.time() - time_start
@@ -105,15 +106,19 @@ def lakh_encode(vae, db_proc, dir_to_save, fb256_mask):
     print(f"successful songs-{succesful_songs}")
     print(f"successful sequences-{successful_sequences}")
     print(f"all songs-{all_songs}")
-    file = open("./final_" + subdirectory + ".txt", 'w')
+
+    file_info_dir = os.path.join(current_dir, run_info_dir)
+    run_info_file_name = subdirectory + "_run.txt"
+    file_info_file_dir = os.path.join(current_dir, run_info_dir, run_info_file_name)
+    if not os.path.exists(file_info_dir):
+        os.mkdir(file_info_dir)
+    file = open(file_info_file_dir, 'w')
+
     file.write("successful songs: " + str(succesful_songs) + "\n")
     file.write("successful sequences: " + str(successful_sequences) + "\n")
     file.write("all songs: " + str(all_songs) + "\n")
     file.close()
-    return metadata
-
-
-
+    return metadata, successful_sequences
 
 
 current_dir = os.getcwd()
@@ -132,6 +137,8 @@ db_type = "lakh_singletrack"
 db_proc = db_processing(nesmdb_shared_library_path, db_type)
 vae = singletrack_vae(model_path, batch_size)
 
+run_info_dir = "lakh_run_info"
+
 # slices_rel_path = "fb256_slices_76.pkl"
 # slices_abs_path = os.path.join(current_dir, slices_rel_path)
 # fb256_slices = pickle.load(open(slices_abs_path, "rb"))
@@ -141,6 +148,7 @@ vae = singletrack_vae(model_path, batch_size)
 # fb256_mask[fb256_slices] = True
 
 check_gpus()
+all_valid_sequences_num = 0
 
 for i in range(16):
 
@@ -157,5 +165,8 @@ for i in range(16):
     metadata_full_path_pkl = os.path.join(current_dir, db_metadata_pkl_rel_path)
     metadata_full_path_json = os.path.join(current_dir, db_metadata_json_rel_path)
 
-    metadata = lakh_encode(vae, db_proc, dir_to_save, None)
+    metadata, successful_sequences_num = lakh_encode(vae, db_proc, dir_to_save, None)
+    all_valid_sequences_num += successful_sequences_num
     save_metadata(metadata)
+
+print("all_valid_sequences_num", all_valid_sequences_num)

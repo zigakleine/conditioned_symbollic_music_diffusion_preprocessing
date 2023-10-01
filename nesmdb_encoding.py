@@ -39,7 +39,7 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
 
     output_folder = "nesmdb_encoded"
     all_encodings_dir = os.path.join(dir_to_save, output_folder)
-
+    #
     if not os.path.exists(all_encodings_dir):
         os.mkdir(all_encodings_dir)
 
@@ -120,7 +120,6 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
 
 
                 z = vae.encode_sequence(song_data_extended)
-
                 batch_size = (song_min_measures//2)*4
                 num_batches = len(z) // batch_size
 
@@ -137,6 +136,7 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
 
                 encoded_song_urls.append(encoded_song_rel_path)
                 song["encoded_song_urls"] = encoded_song_urls
+                song["num_sequences"] = reshaped_z.shape[0]
                 save_metadata(metadata)
 
 
@@ -162,7 +162,7 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
     file.write("successful sequences: " + str(valid_sequences_counter) + "\n")
     file.write("all songs: " + str(all_songs_counter) + "\n")
     file.close()
-    return metadata
+    return metadata, valid_sequences_counter
 
 
 dir_to_save = "/storage/local/ssd/zigakleine-workspace"
@@ -190,9 +190,13 @@ vae = singletrack_vae(model_path, batch_size)
 #
 # fb256_mask = np.zeros((512,), dtype=bool)
 # fb256_mask[fb256_slices] = True
+all_valid_sequences_num = 0
 
 for desired_instruments in desired_instruments_permutations:
     for transposition_plus, transposition in transpositions:
 
-        metadata = nesmdb_encode(transposition, transposition_plus, desired_instruments, vae, db_proc, dir_to_save, None)
+        metadata, valid_sequences_num = nesmdb_encode(transposition, transposition_plus, desired_instruments, vae, db_proc, dir_to_save, None)
+        all_valid_sequences_num += valid_sequences_num
         save_metadata(metadata)
+
+print("all_valid_sequences_num", all_valid_sequences_num)
