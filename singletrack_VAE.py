@@ -81,11 +81,14 @@ class db_processing:
 
         # Convert the array to a NumPy array
         sequences_ = np.zeros((sequence_array.dim1, sequence_array.dim2), dtype=np.int32)
+        sequences_test = np.zeros((sequence_array.dim1, sequence_array.dim2), dtype=np.int32)
+
 
         for i in range(sequence_array.dim1):
             for j in range(sequence_array.dim2):
 
                 current_value = sequence_array.sequence[i][j]
+                sequences_test[i, j] = current_value
                 if 21 <= current_value <= 108:
                     sequences_[i, j] = current_value - 19
                 elif current_value == -2:
@@ -96,7 +99,7 @@ class db_processing:
                 if i == (sequence_array.dim1 - 1) and current_value >= 0:
                     if current_value >= 16:
                         current_value = current_value // 8
-                    sequences_[i][j] = current_value + 2
+                    sequences_[i, j] = current_value + 2
 
         for i in range(len(sequences_)):
             for j in range(len(sequences_[i])):
@@ -201,12 +204,6 @@ class db_processing:
             for sequence_timestep in range(len(song_data[track_num])):
                 current_token = song_data[track_num, sequence_timestep]
 
-                if current_token > 1:
-                    if track_num == (len(song_data) - 1):
-                        current_token -= 2
-                    else:
-                        current_token += 19
-
                 if current_token == 0:
                     if not (note_playing == -1):
                         mid.tracks[track_num + 1].append(
@@ -216,6 +213,12 @@ class db_processing:
                 elif current_token == 1:
                     pass
                 else:
+
+                    if track_num == (len(song_data) - 1):
+                        current_token -= 2
+                    else:
+                        current_token += 19
+
                     if not (note_playing == -1):
                         mid.tracks[track_num + 1].append(
                             Message('note_off', note=note_playing, velocity=3, time=ticks_from_last_event))
@@ -358,7 +361,7 @@ class singletrack_vae:
 # print(results)
 if __name__ == "__main__":
 
-    mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/282_RoboWarrior_12_13EndingStaffRoll.mid"
+    mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid"
 
     batch_size = 32
     temperature = 0.5
@@ -384,11 +387,11 @@ if __name__ == "__main__":
         vae = singletrack_vae(model_path, batch_size)
 
         song_data = db_proc.song_from_midi_nesmdb(mario_file_path, transposition, transposition_plus)
+        #
+        # z = vae.encode_sequence(song_data)
+        # song_data_ = vae.decode_sequence(z, total_steps, temperature)
 
-        z = vae.encode_sequence(song_data)
-        song_data_ = vae.decode_sequence(z, total_steps, temperature)
-
-        midi = db_proc.midi_from_song(song_data_)
+        midi = db_proc.midi_from_song(song_data)
         midi.save("mario_.mid")
 
     elif db_type == "lakh_singletrack":
