@@ -21,7 +21,7 @@ def save_metadata(metadata):
     file_json.close()
 
 
-def lakh_encode(vae, db_proc, dir_to_save, fb256_mask):
+def lakh_encode(vae, db_proc, dir_to_save):
 
     output_folder = "lakh_encoded"
 
@@ -80,13 +80,24 @@ def lakh_encode(vae, db_proc, dir_to_save, fb256_mask):
             for song_data_seq in song_data:
                 z = vae.encode_sequence(song_data_seq)
                 zs.append(z)
-            z_reshaped = np.array(zs)
+            reshaped_z = np.array(zs)
 
             file = open(encoded_song_abs_path, 'wb')
-            pickle.dump(z_reshaped, file)
+            pickle.dump(reshaped_z, file)
             file.close()
             succesful_songs += 1
             successful_sequences += song_data_sequences
+
+            # temperature = 0.0002
+            # total_steps = 32
+            # total_acc = 0
+            # for i in range(song_data_sequences):
+            #     song_data_ = vae.decode_sequence(reshaped_z[i], total_steps, temperature)
+            #     compare_encoded_decoded = (song_data_ == song_data[i])
+            #     true_count = np.count_nonzero(compare_encoded_decoded)
+            #     total_elements = compare_encoded_decoded.size
+            #     total_acc += true_count / total_elements
+            # print("accuracy-", (total_acc/song_data_sequences))
 
             metadata[song]["encodable"] = True
             metadata[song]["encoded_song_path"] = encoded_song_rel_path
@@ -116,7 +127,10 @@ def lakh_encode(vae, db_proc, dir_to_save, fb256_mask):
 
 
 current_dir = os.getcwd()
+
 dir_to_save = "/storage/local/ssd/zigakleine-workspace"
+# dir_to_save = os.getcwd()
+
 model_rel_path = "cat-mel_2bar_big.tar"
 nesmdb_shared_library_rel_path = "ext_nseq_lakh_single_lib.so"
 
@@ -159,7 +173,7 @@ for i in range(16):
     metadata_full_path_pkl = os.path.join(current_dir, db_metadata_pkl_rel_path)
     metadata_full_path_json = os.path.join(current_dir, db_metadata_json_rel_path)
 
-    metadata, successful_sequences_num = lakh_encode(vae, db_proc, dir_to_save, None)
+    metadata, successful_sequences_num = lakh_encode(vae, db_proc, dir_to_save)
     all_valid_sequences_num += successful_sequences_num
     save_metadata(metadata)
 
