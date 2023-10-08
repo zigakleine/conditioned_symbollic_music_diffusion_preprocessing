@@ -34,7 +34,7 @@ def save_metadata(metadata):
     file_json.close()
 
 
-def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, dir_to_save, fb256_mask):
+def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, dir_to_save):
 
     output_folder = "nesmdb_encoded"
     all_encodings_dir = os.path.join(dir_to_save, output_folder)
@@ -93,6 +93,7 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
                     save_metadata(metadata)
 
             else:
+
                 song_data = db_proc.song_from_midi_nesmdb(song_full_path, transposition, transposition_plus)
 
                 instruments_order_indices = [instruments_dict[ins] for ins in instruments]
@@ -117,20 +118,30 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
                         new_length_measures = ((song_measures // song_min_measures) * song_min_measures)
                         song_data_extended = song_data[:, :(new_length_measures*16)]
 
-                z = vae.encode_sequence(song_data_extended)
-                batch_size = (song_min_measures//2)*4
-                num_batches = len(z) // batch_size
+                new_measures = song_data_extended.shape[1]//(song_min_measures*16)
+                song_data_extended_split = np.split(song_data_extended, new_measures, axis=1)
 
-                new_shape = (num_batches, batch_size, z.shape[1])
-                reshaped_z = z[:num_batches * batch_size].reshape(new_shape)
-
-                if fb256_mask is not None:
-                    reshaped_z = reshaped_z[:, :, fb256_mask]
+                zs = []
+                for song_data_ext in song_data_extended_split:
+                    z = vae.encode_sequence(song_data_ext)
+                    zs.append(z)
+                reshaped_z = np.array(zs)
 
                 valid_sequences_counter += reshaped_z.shape[0]
                 file = open(encoded_song_abs_path, 'wb')
                 pickle.dump(reshaped_z, file)
                 file.close()
+
+                # temperature = 0.0002
+                # total_steps = 32
+                # total_acc = 0
+                # for i in range(new_measures):
+                #     song_data_ = vae.decode_sequence(reshaped_z[i], total_steps, temperature)
+                #     compare_encoded_decoded = (song_data_ == song_data_extended_split[i])
+                #     true_count = np.count_nonzero(compare_encoded_decoded)
+                #     total_elements = compare_encoded_decoded.size
+                #     total_acc += true_count / total_elements
+                # print("accuracy-", (total_acc/new_measures))
 
                 encoded_song_urls.append(encoded_song_rel_path)
                 song["encoded_song_urls"] = encoded_song_urls
@@ -164,6 +175,8 @@ def nesmdb_encode(transposition, transposition_plus, instruments, vae, db_proc, 
 
 
 dir_to_save = "/storage/local/ssd/zigakleine-workspace"
+# dir_to_save = os.getcwd()
+
 desired_instruments_permutations = [["p1", "p2", "tr", "no"], ["p2", "p1", "tr", "no"]]
 transpositions = ((False, 5), (False, 4), (False, 3), (False, 2), (False, 1), (True, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5), (True, 6))
 
@@ -193,7 +206,7 @@ all_valid_sequences_num = 0
 for desired_instruments in desired_instruments_permutations:
     for transposition_plus, transposition in transpositions:
 
-        metadata, valid_sequences_num = nesmdb_encode(transposition, transposition_plus, desired_instruments, vae, db_proc, dir_to_save, None)
+        metadata, valid_sequences_num = nesmdb_encode(transposition, transposition_plus, desired_instruments, vae, db_proc, dir_to_save)
         all_valid_sequences_num += valid_sequences_num
         save_metadata(metadata)
 

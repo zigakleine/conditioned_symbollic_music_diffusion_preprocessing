@@ -76,17 +76,11 @@ def lakh_encode(vae, db_proc, dir_to_save, fb256_mask):
 
             song_data_sequences = song_data.shape[0]
 
-            song_data_reshaped = np.concatenate(song_data, axis=1)
-            z = vae.encode_sequence(song_data_reshaped)
-
-            batch_size = (song_min_measures // 2) * 4
-            num_batches = len(z) // batch_size
-
-            new_shape = (num_batches, batch_size, z.shape[1])
-            z_reshaped = z[:num_batches * batch_size].reshape(new_shape)
-
-            if fb256_mask is not None:
-                z_reshaped = z_reshaped[:, :, fb256_mask]
+            zs = []
+            for song_data_seq in song_data:
+                z = vae.encode_sequence(song_data_seq)
+                zs.append(z)
+            z_reshaped = np.array(zs)
 
             file = open(encoded_song_abs_path, 'wb')
             pickle.dump(z_reshaped, file)

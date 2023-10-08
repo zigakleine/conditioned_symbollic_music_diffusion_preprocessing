@@ -10,6 +10,7 @@ from singletrack_VAE import check_gpus, db_processing, singletrack_vae
 
 mario_file_path = "/Users/zigakleine/Desktop/conditioned_symbollic_music_diffusion_preprocessing/nesmdb_flat/322_SuperMarioBros__00_01RunningAbout.mid"
 
+
 batch_size = 64
 temperature = 0.0002
 total_steps = 32
@@ -62,7 +63,7 @@ reconstruction_sample_songs = pickle.load(open("./vae_reconstruction_songs.pkl",
 reconstruction_sample_songs = reconstruction_sample_songs[:num_songs]
 num_latents = 512
 
-std_devs_tracks = pickle.load(open("./std_devs_singletrack.pkl", "rb"))
+std_devs_tracks = pickle.load(open("./std_devs_singletrack_2.pkl", "rb"))
 std_devs_masks = []
 
 for std_dev_track in std_devs_tracks:
@@ -78,8 +79,8 @@ for std_dev_track in std_devs_tracks:
 
 # temperatures = [0.0005, 0.0009, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.015, 0.03, 0.09, 0.1, 0.5, 1.0, 1.5 ,2.0]
 # temperatures = [0.00001, 0.00005, 0.0001, 0.0002, 0.0003, 0.0004, 0.0005]
-temperatures =  [1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 50.0]
-# temperatures = [0.0002]
+# temperatures =  [1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 50.0]
+temperatures = [0.0002]
 accuracies = []
 losses = []
 
@@ -107,7 +108,7 @@ for temperature in temperatures:
 
         z_tracks_reconstructed = np.vstack(z_tracks_reconstructed)
 
-        song_data_, song_tensors, logits = vae.decode_sequence_full_results(z_tracks_reconstructed, total_steps, temperature)
+        song_data_, song_tensors, logits = vae.decode_sequence_full_results(z, total_steps, temperature)
 
         song_data_flat = song_data.ravel()
         logits_vertical = logits.reshape((logits.shape[0]*logits.shape[1], logits.shape[-1]))
