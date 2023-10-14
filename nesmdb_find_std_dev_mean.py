@@ -54,8 +54,8 @@ for game in metadata:
                     mean = np.mean(seq)
                     std_dev = np.std(seq)
 
-                    lt1 = seq <= -1.
-                    m1 = seq >= 1.
+                    lt1 = seq >= -1.
+                    m1 = seq <= 1.
                     in_range = np.logical_and(lt1, m1)
                     in_range_count = np.count_nonzero(in_range)
                     total_elements = in_range.size
@@ -64,8 +64,8 @@ for game in metadata:
                     seq_ = (seq - data_min) / (data_max - data_min)
                     seq_ = 2. * seq_ - 1.
 
-                    lt1_ = seq_ <= -1.
-                    m1_ = seq_ >= 1.
+                    lt1_ = seq_ >= -1.
+                    m1_ = seq_ <= 1.
                     in_range_ = np.logical_and(lt1_, m1_)
                     in_range_count_ = np.count_nonzero(in_range_)
                     total_elements_ = in_range_.size
