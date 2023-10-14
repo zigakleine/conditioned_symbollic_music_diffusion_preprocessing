@@ -33,8 +33,8 @@ avg_std_devs_b = []
 avg_means_a = []
 avg_std_devs_a = []
 
-data_min = -14.
-data_max = 14.
+data_min = -3.
+data_max = 3.
 
 for game in metadata:
 
