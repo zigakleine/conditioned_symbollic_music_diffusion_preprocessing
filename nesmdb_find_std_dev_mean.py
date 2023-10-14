@@ -48,7 +48,7 @@ for game in metadata:
                 song_abs_url = os.path.join(encoded_dir, song_rel_url)
                 song_encoded = pickle.load(open(song_abs_url, "rb"))
 
-                for seq_idx in song_encoded.shape[0]:
+                for seq_idx in range(song_encoded.shape[0]):
                     seq = song_encoded[seq_idx]
                     sequences += 1
                     mean = np.mean(seq)
