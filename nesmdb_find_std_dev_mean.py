@@ -54,7 +54,9 @@ for game in metadata:
                     mean = np.mean(seq)
                     std_dev = np.std(seq)
 
-                    in_range = (-1. <= seq <= 1.)
+                    lt1 = seq <= -1.
+                    m1 = seq >= 1.
+                    in_range = lt1 & m1
                     in_range_count = np.count_nonzero(in_range)
                     total_elements = in_range.size
                     in_range_perc = in_range/total_elements
@@ -63,7 +65,9 @@ for game in metadata:
                     seq_ = (seq - data_min) / (data_max - data_min)
                     seq_ = 2. * seq_ - 1.
 
-                    in_range_ = (-1. <= seq_ <= 1.)
+                    lt1_ = seq_ <= -1.
+                    m1_ = seq_ >= 1.
+                    in_range_ = lt1_ & m1_
                     in_range_count_ = np.count_nonzero(in_range_)
                     total_elements_ = in_range_.size
                     in_range_perc_ = in_range_/total_elements_
