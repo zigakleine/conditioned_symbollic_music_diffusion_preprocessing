@@ -12,8 +12,8 @@ metadata_folder = "db_metadata"
 database_folder = "nesmdb"
 
 current_dir = os.getcwd()
-# encoded_dir = "/storage/local/ssd/zigakleine-workspace/"
-encoded_dir = os.getcwd()
+encoded_dir = "/storage/local/ssd/zigakleine-workspace/"
+# encoded_dir = os.getcwd()
 
 
 metadata_filename = "nesmdb_updated2808.pkl"
@@ -52,19 +52,21 @@ for game in metadata:
                     seq = song_encoded[seq_idx]
                     sequences += 1
                     mean = np.mean(seq)
-                    std_dev = np.mean(seq)
+                    std_dev = np.std(seq)
 
                     seq_ = (seq - data_min) / (data_max - data_min)
                     seq_ = 2. * seq_ - 1.
 
                     mean_ = np.mean(seq_)
-                    std_dev_ = np.mean(seq_)
+                    std_dev_ = np.std(seq_)
 
                     avg_means_b.append(mean)
                     avg_means_a.append(mean_)
 
                     avg_std_devs_b.append(std_dev)
                     avg_std_devs_a.append(std_dev_)
+
+                    print(f"mean_b-{mean} mean_a-{mean_} stddev-b-{std_dev} stddev_a-{std_dev_}")
 
 
 print("mean-before", sum(avg_means_b)/len(avg_means_b))
